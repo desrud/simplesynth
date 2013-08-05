@@ -44,7 +44,8 @@ private:
 
     enum {
 		OutputPort = 0,
-		PortCount  = 1
+		Detune = 1,
+		PortCount  = 2
     };
 
     enum {
@@ -74,11 +75,14 @@ private:
     void addSamples(int, unsigned long, unsigned long);
 
 	float *m_output;
+	float *m_detune;
 
 	WaveTable waveTable;
+	float centTable[101];
 	
     int    m_sampleRate;
     long   m_blockStart;
+
 
 	float  m_phases[Notes];
 	long   m_ons[Notes];
@@ -91,18 +95,22 @@ const char *const
 SimpleSynth::portNames[PortCount] =
 {
     "Output",
+	"Detune",
 };
 
 const LADSPA_PortDescriptor 
 SimpleSynth::ports[PortCount] =
 {
-    LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO,
+    LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO,     //Output
+    LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Detune
 };
 
 const LADSPA_PortRangeHint 
 SimpleSynth::hints[PortCount] =
 {
-    { 0, 0, 0 },
+    { 0, 0, 0 },                                                     //Output
+    { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
+      LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //Detune
 };
 
 const LADSPA_Properties
@@ -157,12 +165,18 @@ SimpleSynth::getDescriptor(unsigned long index)
 SimpleSynth::SimpleSynth(int sampleRate) :
     m_output(0),
     m_sampleRate(sampleRate),
-    m_blockStart(0)
+    m_blockStart(0),
+    m_detune(0)
 {
     for (int i = 0; i < Notes; ++i) {
 		float frequency = 440.0f * powf(2.0, (i - 69.0) / 12.0);
 		m_frequencies[i] = frequency;
     }
+
+	for (int i = 0; i < 101; i++) {
+		float cent = powf(2.0, i / 1200.0);
+		centTable[i] = cent;
+	}
 }
 
 SimpleSynth::~SimpleSynth()
@@ -184,6 +198,7 @@ SimpleSynth::connectPort(LADSPA_Handle handle,
 
     float **ports[PortCount] = {
 		&simpleSynth->m_output,
+		&simpleSynth->m_detune,
     };
 
     *ports[port] = (float *)location;
@@ -226,7 +241,8 @@ int
 SimpleSynth::getMidiController(LADSPA_Handle, unsigned long port)
 {
     int controllers[PortCount] = {
-	DSSI_NONE,
+		DSSI_NONE,
+		DSSI_CC(70)
     };
 
     return controllers[port];
@@ -319,7 +335,8 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
     size_t i, s;
 
     float vgain = (float)(m_velocities[voice]) / 127.0f;
-	float phase_increment = m_frequencies[voice] / m_sampleRate;
+	float freq = m_frequencies[voice] * centTable[(int) (*m_detune)];//TODO looks very unsafe
+	float phase_increment = freq / m_sampleRate;
 	
     for (i = 0, s = start - on; i < count; ++i, ++s) {
 
