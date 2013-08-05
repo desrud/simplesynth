@@ -69,7 +69,7 @@ SynthGUI::SynthGUI(const char * host, const char * port,
 
     QGridLayout *layout = new QGridLayout(this);
 
-    m_detune  = newQDial(0, 100, 1, 3); // (Hz - 400) * 10
+    m_detune  = newQDial(0, 100, 1, 0); // (Hz - 400) * 10
 
     m_detuneLabel = new QLabel(this);
 
