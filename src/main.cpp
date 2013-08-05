@@ -360,7 +360,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 		*/
 		m_phases[voice] += phase_increment;
 		if (m_phases[voice] > 1.0f)
-			m_phases[voice] -= 1.0f;//TODO not safe
+			m_phases[voice] -= (int) m_phases[voice];
 
 		
 		m_output[offset + i] += gain * waveTable.calculate(m_phases[voice]);
