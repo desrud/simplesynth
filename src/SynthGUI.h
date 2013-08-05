@@ -45,13 +45,18 @@ public:
     void setHostRequestedQuit(bool r) { m_hostRequestedQuit = r; }
 
 public slots:
+    void setDetune (float cents);
     void aboutToQuit();
 
 protected slots:
+    void detuneChanged(int);
     void oscRecv();
 
 protected:
-    QLabel *m_helloLabel;
+    QDial *newQDial( int, int, int, int );
+
+    QLabel *m_detuneLabel;
+    QDial *m_detune;
 
     lo_address m_host;
     QByteArray m_controlPath;

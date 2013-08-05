@@ -47,6 +47,8 @@ static int handle_x11_error(Display *dpy, XErrorEvent *err)
 
 using std::endl;
 
+#define SIMPLESYNTH_PORT_DETUNE    1
+
 lo_server osc_server = 0;
 
 static QTextStream cerr(stderr);
@@ -66,10 +68,20 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     m_host = lo_address_new(host, port);
 
     QGridLayout *layout = new QGridLayout(this);
-        
-    m_helloLabel  = new QLabel("Hello Fnyrrz", this);
-    
-    layout->addWidget(m_helloLabel,  2, 0, Qt::AlignCenter);
+
+    m_detune  = newQDial(0, 100, 1, 3); // (Hz - 400) * 10
+
+    m_detuneLabel = new QLabel(this);
+
+    layout->addWidget(new QLabel("Detune", this), 0, 0, Qt::AlignCenter);
+    layout->addWidget(m_detune,  1, 0);
+
+    layout->addWidget(m_detuneLabel,  2, 0, Qt::AlignCenter);
+
+    connect(m_detune,  SIGNAL(valueChanged(int)), this, SLOT(detuneChanged(int)));
+
+    // cause some initial updates
+    detuneChanged (m_detune ->value());
 
     QTimer *myTimer = new QTimer(this);
     connect(myTimer, SIGNAL(timeout()), this, SLOT(oscRecv()));
@@ -77,6 +89,27 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     myTimer->start(0);
 
     m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::setDetune(float cent)
+{
+    m_suppressHostUpdate = true;
+    m_detune->setValue(int(cent));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::detuneChanged(int value)
+{
+    float cent = float(value);
+    m_detuneLabel->setText(QString("%1 Cent").arg(cent));
+
+    if (!m_suppressHostUpdate) {
+		cerr << "Sending to host: " << m_controlPath
+			 << " port " << SIMPLESYNTH_PORT_DETUNE << " freq " << cent << endl;
+		lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_DETUNE, cent);
+    }
 }
 
 void
@@ -96,6 +129,18 @@ SynthGUI::aboutToQuit()
 SynthGUI::~SynthGUI()
 {
     lo_address_free(m_host);
+}
+
+QDial *
+SynthGUI::newQDial( int minValue, int maxValue, int pageStep, int value )
+{
+    QDial *dial = new QDial( this );
+    dial->setMinimum( minValue );
+    dial->setMaximum( maxValue );
+    dial->setPageStep( pageStep );
+    dial->setValue( value );
+    dial->setNotchesVisible(true);
+    return dial;
 }
 
 
