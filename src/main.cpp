@@ -313,10 +313,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
     if (start < on) return;
 
     if (start == on) { 
-		//for (size_t i = 0; i <= int(m_sizes[voice]); ++i) {
-			//m_wavetable[voice][i] = (float(rand()) / float(RAND_MAX)) * 2 - 1;
-			//TODO useful logic
-		//}
+		
     }
 
     size_t i, s;
@@ -342,22 +339,6 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 			gain = gain * float(release - dist) / float(release);
 		}
 
-		//size_t sz = int(m_sizes[voice]);
-		//bool decay = (s > sz);
-		//size_t index = (s % int(sz));
-
-		/*
-		float sample = m_wavetable[voice][index];
-
-		if (decay) {
-			if (index == 0) sample += m_wavetable[voice][sz - 1];
-			else sample += m_wavetable[voice][index - 1];
-			sample /= 2;
-			m_wavetable[voice][index] = sample;
-		}
-		
-		m_output[offset + i] += gain * sample;
-		*/
 		m_phases[voice] += phase_increment;
 		if (m_phases[voice] > 1.0f)
 			m_phases[voice] -= (int) m_phases[voice];
