@@ -359,7 +359,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 	float freq = m_frequencies[voice] * centTable[(int) (*m_detune)];//TODO looks very unsafe
 	float phase_increment = freq / m_sampleRate;
 	
-    for (i = 0, s = start - on; i < count; ++i, ++s) {
+    for (i = 0; i < count; ++i) {
 
 		float gain(vgain);
 
