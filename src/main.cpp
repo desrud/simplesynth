@@ -42,6 +42,7 @@ public:
     int velocity;
     
     Voice();
+    void reset();
 };
 
 class SimpleSynth
@@ -94,14 +95,20 @@ private:
     int    m_sampleRate;
     long   m_blockStart;
 
-	float  m_phases[Notes];
-	long   m_ons[Notes];
-    long   m_offs[Notes];
-    int    m_velocities[Notes];
+    Voice  m_voices[Notes];
+
 	float  m_frequencies[Notes];
 };
 
-Voice::Voice() : phase(0), on(0), off(0), velocity(0) {
+Voice::Voice() : phase(0), on(-1), off(-1), velocity(0) {
+}
+
+void
+Voice::reset() {
+    phase = 0;
+    on = -1;
+    off = -1;
+    velocity = 0;
 }
 
 const char *const
@@ -225,11 +232,8 @@ SimpleSynth::activate(LADSPA_Handle handle)
     simpleSynth->m_blockStart = 0;
 
     for (size_t i = 0; i < Notes; ++i) {
-		simpleSynth->m_ons[i] = -1;
-		simpleSynth->m_offs[i] = -1;
-		simpleSynth->m_velocities[i] = 0;
-		simpleSynth->m_phases[i] = 0;
-	}
+        simpleSynth->m_voices[i].reset();
+    }
 }
 
 void
@@ -291,15 +295,15 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 				case SND_SEQ_EVENT_NOTEON:
 					n = events[eventPos].data.note;
 					if (n.velocity > 0) {
-						m_ons[n.note] = m_blockStart + events[eventPos].time.tick;
-						m_offs[n.note] = -1;
-						m_velocities[n.note] = n.velocity;
+                        m_voices[n.note].on = m_blockStart + events[eventPos].time.tick;
+                        m_voices[n.note].off = -1;
+                        m_voices[n.note].velocity = n.velocity;
 					}
 				break;
 
 				case SND_SEQ_EVENT_NOTEOFF:
 					n = events[eventPos].data.note;
-					m_offs[n.note] = m_blockStart + events[eventPos].time.tick;
+                    m_voices[n.note].off = m_blockStart + events[eventPos].time.tick;
 					break;
 
 					default:
@@ -320,7 +324,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 		}
 
 		for (i = 0; i < Notes; ++i) {
-			if (m_ons[i] >= 0) {
+			if (m_voices[i].on >= 0) {
 				addSamples(i, pos, count);
 			}
 		}
@@ -334,9 +338,9 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 void
 SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 {
-    if (m_ons[voice] < 0) return;
+    if (m_voices[voice].on < 0) return;
 
-    unsigned long on = (unsigned long)(m_ons[voice]);
+    unsigned long on = (unsigned long)(m_voices[voice].on);
     unsigned long start = m_blockStart + offset;
 
     if (start < on) return;
@@ -347,7 +351,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 
     size_t i, s;
 
-    float vgain = (float)(m_velocities[voice]) / 127.0f;
+    float vgain = (float)(m_voices[voice].velocity) / 127.0f;
 	float freq = m_frequencies[voice] * centTable[(int) (*m_detune)];//TODO looks very unsafe
 	float phase_increment = freq / m_sampleRate;
 	
@@ -356,25 +360,25 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 		float gain(vgain);
 
 		//TODO looks like an envelope - only release
-		if (m_offs[voice] >= 0 && (unsigned long)(m_offs[voice]) < i + start) {
+		if (m_voices[voice].off >= 0 && (unsigned long)(m_voices[voice].off) < i + start) {
 			
 			unsigned long release = 1 + (0.01 * m_sampleRate);
-			unsigned long dist = i + start - m_offs[voice];
+			unsigned long dist = i + start - m_voices[voice].off;
 
 			if (dist > release) {
-				m_ons[voice] = -1;
+                m_voices[voice].on = -1;
 				break;
 			}
 
 			gain = gain * float(release - dist) / float(release);
 		}
 
-		m_phases[voice] += phase_increment;
-		if (m_phases[voice] > 1.0f)
-			m_phases[voice] -= (int) m_phases[voice];
+		m_voices[voice].phase += phase_increment;
+		if (m_voices[voice].phase > 1.0f)
+			m_voices[voice].phase -= (int) m_voices[voice].phase;
 
 		
-		m_output[offset + i] += gain * waveTable.calculate(m_phases[voice]);
+		m_output[offset + i] += gain * waveTable.calculate(m_voices[voice].phase);
 	}
 }
 
