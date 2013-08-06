@@ -91,7 +91,7 @@ private:
 			 snd_seq_event_t *, unsigned long);
 
     void runImpl(unsigned long, snd_seq_event_t *, unsigned long);
-    void addSamples(int, unsigned long, unsigned long);
+    void addSamples(float*, int, unsigned long, unsigned long);
 
 	float *m_output;
 
@@ -339,7 +339,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 		}
 
 		for (i = 0; i < Notes; ++i) {
-			addSamples(i, pos, count);
+			addSamples(m_output, i, pos, count);
 		}
 
 		pos += count;
@@ -350,7 +350,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 
 //TODO this should belong to voice
 void
-SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
+SimpleSynth::addSamples(float *buffer, int voice, unsigned long offset, unsigned long count)
 {
     if (m_voices[voice].on < 0) return;
 
@@ -359,7 +359,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 
     if (start < on) return;
 
-    size_t i, s;
+    size_t i;
 
     float vgain = (float)(m_voices[voice].velocity) / 127.0f;
     float freq = m_voices[voice].freq;
@@ -389,7 +389,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 		if (m_voices[voice].phase > 1.0f)
 			m_voices[voice].phase -= (int) m_voices[voice].phase;
 
-		m_output[offset + i] += gain * waveTable.calculate(m_voices[voice].phase);
+		buffer[offset + i] += gain * waveTable.calculate(m_voices[voice].phase);
 	}
 }
 
