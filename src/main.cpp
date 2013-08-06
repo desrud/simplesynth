@@ -50,6 +50,7 @@ public:
 
     void noteOn(long tick, int velocity, int pitch);
     void setSettings(Settings *settings);
+    void addSamples(float *buffer, unsigned long offset, unsigned long count);
 };
 
 class SimpleSynth
@@ -123,11 +124,53 @@ void
 Voice::noteOn(long tick, int velocity, int pitch)
 {
     m_on = tick;
+
     off = -1;
     this->velocity = velocity;
     freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
 }
 
+void
+Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
+{
+    if (m_on < 0) return;
+
+    unsigned long on = (unsigned long)(m_on);
+    unsigned long start = m_settings->m_blockStart + offset;
+
+    if (start < on) return;
+
+    float vgain = (float)(velocity) / 127.0f;
+
+    float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
+    float freq_detuned = freq * centFactor;
+    float phase_increment = freq_detuned / m_settings->m_sampleRate;
+
+    for (size_t i = 0; i < count; ++i) {
+
+        float gain(vgain);
+
+        //TODO looks like an envelope - only release
+        if (off >= 0 && (unsigned long)(off) < i + start) {
+
+            unsigned long release = 1 + (0.01 * m_settings->m_sampleRate);
+            unsigned long dist = i + start - off;
+
+            if (dist > release) {
+                m_on = -1;
+                break;
+            }
+
+            gain = gain * float(release - dist) / float(release);
+        }
+
+        phase += phase_increment;
+        if (phase > 1.0f)
+            phase -= (int) phase;
+
+        buffer[offset + i] += gain * m_settings->waveTable.calculate(phase);
+    }
+}
 
 const char *const
 SimpleSynth::portNames[PortCount] =
@@ -336,59 +379,14 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 			m_output[pos + i] = 0;
 		}
 
-		for (i = 0; i < Notes; ++i) {
-			addSamples(m_output, i, pos, count);
-		}
+        for (i = 0; i < Notes; ++i) {
+            m_voices[i].addSamples(m_output, pos, count);
+        }
 
-		pos += count;
+        pos += count;
     }
 
     m_settings->m_blockStart += sampleCount;
-}
-
-//TODO this should belong to voice
-void
-SimpleSynth::addSamples(float *buffer, int voice, unsigned long offset, unsigned long count)
-{
-    if (m_voices[voice].m_on < 0) return;
-
-    unsigned long on = (unsigned long)(m_voices[voice].m_on);
-    unsigned long start = m_settings->m_blockStart + offset;
-
-    if (start < on) return;
-
-    size_t i;
-
-    float vgain = (float)(m_voices[voice].velocity) / 127.0f;
-    float freq = m_voices[voice].freq;
-    float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
-    float freq_detuned = freq * centFactor;
-    float phase_increment = freq_detuned / m_settings->m_sampleRate;
-
-    for (i = 0; i < count; ++i) {
-
-		float gain(vgain);
-
-		//TODO looks like an envelope - only release
-		if (m_voices[voice].off >= 0 && (unsigned long)(m_voices[voice].off) < i + start) {
-			
-			unsigned long release = 1 + (0.01 * m_settings->m_sampleRate);
-			unsigned long dist = i + start - m_voices[voice].off;
-
-			if (dist > release) {
-                m_voices[voice].m_on = -1;
-				break;
-			}
-
-			gain = gain * float(release - dist) / float(release);
-		}
-
-		m_voices[voice].phase += phase_increment;
-		if (m_voices[voice].phase > 1.0f)
-			m_voices[voice].phase -= (int) m_voices[voice].phase;
-
-        buffer[offset + i] += gain * m_settings->waveTable.calculate(m_voices[voice].phase);
-	}
 }
 
 extern "C" {
