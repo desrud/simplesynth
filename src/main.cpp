@@ -94,7 +94,6 @@ private:
     void addSamples(int, unsigned long, unsigned long);
 
 	float *m_output;
-	float *m_detune;
 
     Settings *m_settings;
 
@@ -208,11 +207,11 @@ SimpleSynth::getDescriptor(unsigned long index)
 
 SimpleSynth::SimpleSynth(int sampleRate) :
     m_output(0),
-    m_blockStart(0),
-    m_detune(0)
+    m_blockStart(0)
 {
     m_settings = new Settings();
     m_settings->m_sampleRate = sampleRate;
+    m_settings->m_detune = 0;
 
     for (int i = 0; i < Notes; i++) {
         m_voices[i].setSettings(m_settings);
@@ -243,8 +242,8 @@ SimpleSynth::connectPort(LADSPA_Handle handle,
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
     float **ports[PortCount] = {
-		&simpleSynth->m_output,
-		&simpleSynth->m_detune,
+        &simpleSynth->m_output,
+        &simpleSynth->m_settings->m_detune,
     };
 
     *ports[port] = (float *)location;
@@ -371,7 +370,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
     size_t i, s;
 
     float vgain = (float)(m_voices[voice].velocity) / 127.0f;
-	float freq = m_voices[voice].freq * centTable[(int) (*m_detune)];//TODO looks very unsafe
+	float freq = m_voices[voice].freq * centTable[(int) (*(m_settings->m_detune))];//TODO looks very unsafe
 	float phase_increment = freq / m_settings->m_sampleRate;
 	
     for (i = 0; i < count; ++i) {

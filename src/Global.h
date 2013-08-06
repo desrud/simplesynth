@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * simple-synth
  * Copyright (C) drd 2013 <drd@muh>
@@ -23,6 +23,7 @@
 struct Settings
 {
     int m_sampleRate;
+    float *m_detune;
 };
 
 #endif // __SIMPLE_SYNTH_GLOBAL_H_
