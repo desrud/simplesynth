@@ -100,8 +100,6 @@ private:
 	WaveTable waveTable;
 	float centTable[101];
 
-    long   m_blockStart;
-
     Voice  m_voices[Notes];
 };
 
@@ -206,12 +204,12 @@ SimpleSynth::getDescriptor(unsigned long index)
 }
 
 SimpleSynth::SimpleSynth(int sampleRate) :
-    m_output(0),
-    m_blockStart(0)
+    m_output(0)
 {
     m_settings = new Settings();
     m_settings->m_sampleRate = sampleRate;
     m_settings->m_detune = 0;
+    m_settings->m_blockStart = 0;
 
     for (int i = 0; i < Notes; i++) {
         m_voices[i].setSettings(m_settings);
@@ -254,7 +252,7 @@ SimpleSynth::activate(LADSPA_Handle handle)
 {
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
-    simpleSynth->m_blockStart = 0;
+    simpleSynth->m_settings->m_blockStart = 0;
 
     for (size_t i = 0; i < Notes; ++i) {
         simpleSynth->m_voices[i].reset();
@@ -320,13 +318,13 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 				case SND_SEQ_EVENT_NOTEON:
 					n = events[eventPos].data.note;
 					if (n.velocity > 0) {
-                        m_voices[n.note].noteOn(m_blockStart + events[eventPos].time.tick, n.velocity, n.note);
+                        m_voices[n.note].noteOn(m_settings->m_blockStart + events[eventPos].time.tick, n.velocity, n.note);
 					}
 				break;
 
 				case SND_SEQ_EVENT_NOTEOFF:
 					n = events[eventPos].data.note;
-                    m_voices[n.note].off = m_blockStart + events[eventPos].time.tick;
+                    m_voices[n.note].off = m_settings->m_blockStart + events[eventPos].time.tick;
 					break;
 
 					default:
@@ -353,7 +351,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 		pos += count;
     }
 
-    m_blockStart += sampleCount;
+    m_settings->m_blockStart += sampleCount;
 }
 
 //TODO this should belong to voice
@@ -363,7 +361,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
     if (m_voices[voice].on < 0) return;
 
     unsigned long on = (unsigned long)(m_voices[voice].on);
-    unsigned long start = m_blockStart + offset;
+    unsigned long start = m_settings->m_blockStart + offset;
 
     if (start < on) return;
 

@@ -22,8 +22,9 @@
 
 struct Settings
 {
-    int m_sampleRate;
+    int    m_sampleRate;
     float *m_detune;
+    long   m_blockStart;
 };
 
 #endif // __SIMPLE_SYNTH_GLOBAL_H_
