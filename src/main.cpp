@@ -32,10 +32,16 @@
 
 #include "WaveTable.h"
 
+struct Settings
+{
+    int m_sampleRate;
+};
+
 
 class Voice
 {
 private:
+    Settings *m_settings;
 
 public:
     long on;
@@ -48,6 +54,7 @@ public:
     void reset();
 
     void noteOn(long tick, int velocity, int pitch);
+    void setSettings(Settings *settings);
 };
 
 class SimpleSynth
@@ -94,16 +101,18 @@ private:
 	float *m_output;
 	float *m_detune;
 
+    Settings *m_settings;
+
 	WaveTable waveTable;
 	float centTable[101];
-	
-    int    m_sampleRate;
+
     long   m_blockStart;
 
     Voice  m_voices[Notes];
 };
 
-Voice::Voice() : phase(0), on(-1), off(-1), velocity(0), freq(1) {
+Voice::Voice() : phase(0), on(-1), off(-1), velocity(0), freq(1) 
+{
 }
 
 void
@@ -115,7 +124,14 @@ Voice::reset() {
     freq = 1;
 }
 
-void Voice::noteOn(long tick, int velocity, int pitch)
+void
+Voice::setSettings(Settings *settings)
+{
+    this->m_settings = settings;
+}
+
+void
+Voice::noteOn(long tick, int velocity, int pitch)
 {
     on = tick;
     off = -1;
@@ -197,10 +213,16 @@ SimpleSynth::getDescriptor(unsigned long index)
 
 SimpleSynth::SimpleSynth(int sampleRate) :
     m_output(0),
-    m_sampleRate(sampleRate),
     m_blockStart(0),
     m_detune(0)
 {
+    m_settings = new Settings();
+    m_settings->m_sampleRate = sampleRate;
+
+    for (int i = 0; i < Notes; i++) {
+        m_voices[i].setSettings(m_settings);
+    }
+
 	for (int i = 0; i < 101; i++) {
 		float cent = powf(2.0, i / 1200.0);
 		centTable[i] = cent;
@@ -209,6 +231,7 @@ SimpleSynth::SimpleSynth(int sampleRate) :
 
 SimpleSynth::~SimpleSynth()
 {
+    delete m_settings;
 }
     
 LADSPA_Handle
@@ -354,7 +377,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 
     float vgain = (float)(m_voices[voice].velocity) / 127.0f;
 	float freq = m_voices[voice].freq * centTable[(int) (*m_detune)];//TODO looks very unsafe
-	float phase_increment = freq / m_sampleRate;
+	float phase_increment = freq / m_settings->m_sampleRate;
 	
     for (i = 0; i < count; ++i) {
 
@@ -363,7 +386,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 		//TODO looks like an envelope - only release
 		if (m_voices[voice].off >= 0 && (unsigned long)(m_voices[voice].off) < i + start) {
 			
-			unsigned long release = 1 + (0.01 * m_sampleRate);
+			unsigned long release = 1 + (0.01 * m_settings->m_sampleRate);
 			unsigned long dist = i + start - m_voices[voice].off;
 
 			if (dist > release) {
