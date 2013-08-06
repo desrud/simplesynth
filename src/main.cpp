@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * main.cc
  * Copyright (C) 2013 desrud <ctrenner@gmx.at>
@@ -32,6 +32,17 @@
 
 #include "WaveTable.h"
 
+
+class Voice
+{
+public:
+    float phase;
+    long on;
+    long off;
+    int velocity;
+    
+    Voice();
+};
 
 class SimpleSynth
 {
@@ -83,13 +94,15 @@ private:
     int    m_sampleRate;
     long   m_blockStart;
 
-
 	float  m_phases[Notes];
 	long   m_ons[Notes];
     long   m_offs[Notes];
     int    m_velocities[Notes];
 	float  m_frequencies[Notes];
 };
+
+Voice::Voice() : phase(0), on(0), off(0), velocity(0) {
+}
 
 const char *const
 SimpleSynth::portNames[PortCount] =
