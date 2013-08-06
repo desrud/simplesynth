@@ -35,14 +35,18 @@
 
 class Voice
 {
+private:
+
 public:
-    float phase;
     long on;
+    float phase;
     long off;
     int velocity;
     
     Voice();
     void reset();
+
+    void noteOn(long tick, int velocity);
 };
 
 class SimpleSynth
@@ -110,6 +114,14 @@ Voice::reset() {
     off = -1;
     velocity = 0;
 }
+
+void Voice::noteOn(long tick, int velocity)
+{
+    on = tick;
+    off = -1;
+    this->velocity = velocity;
+}
+
 
 const char *const
 SimpleSynth::portNames[PortCount] =
@@ -295,9 +307,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 				case SND_SEQ_EVENT_NOTEON:
 					n = events[eventPos].data.note;
 					if (n.velocity > 0) {
-                        m_voices[n.note].on = m_blockStart + events[eventPos].time.tick;
-                        m_voices[n.note].off = -1;
-                        m_voices[n.note].velocity = n.velocity;
+                        m_voices[n.note].noteOn(m_blockStart + events[eventPos].time.tick, n.velocity);
 					}
 				break;
 
@@ -324,9 +334,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 		}
 
 		for (i = 0; i < Notes; ++i) {
-			if (m_voices[i].on >= 0) {
-				addSamples(i, pos, count);
-			}
+			addSamples(i, pos, count);
 		}
 
 		pos += count;
@@ -344,10 +352,6 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
     unsigned long start = m_blockStart + offset;
 
     if (start < on) return;
-
-    if (start == on) { 
-		
-    }
 
     size_t i, s;
 
