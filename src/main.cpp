@@ -42,11 +42,12 @@ public:
     float phase;
     long off;
     int velocity;
+    float freq;
     
     Voice();
     void reset();
 
-    void noteOn(long tick, int velocity);
+    void noteOn(long tick, int velocity, int pitch);
 };
 
 class SimpleSynth
@@ -100,11 +101,9 @@ private:
     long   m_blockStart;
 
     Voice  m_voices[Notes];
-
-	float  m_frequencies[Notes];
 };
 
-Voice::Voice() : phase(0), on(-1), off(-1), velocity(0) {
+Voice::Voice() : phase(0), on(-1), off(-1), velocity(0), freq(1) {
 }
 
 void
@@ -113,13 +112,15 @@ Voice::reset() {
     on = -1;
     off = -1;
     velocity = 0;
+    freq = 1;
 }
 
-void Voice::noteOn(long tick, int velocity)
+void Voice::noteOn(long tick, int velocity, int pitch)
 {
     on = tick;
     off = -1;
     this->velocity = velocity;
+    freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
 }
 
 
@@ -200,11 +201,6 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_blockStart(0),
     m_detune(0)
 {
-    for (int i = 0; i < Notes; ++i) {
-		float frequency = 440.0f * powf(2.0, (i - 69.0) / 12.0);
-		m_frequencies[i] = frequency;
-    }
-
 	for (int i = 0; i < 101; i++) {
 		float cent = powf(2.0, i / 1200.0);
 		centTable[i] = cent;
@@ -307,7 +303,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 				case SND_SEQ_EVENT_NOTEON:
 					n = events[eventPos].data.note;
 					if (n.velocity > 0) {
-                        m_voices[n.note].noteOn(m_blockStart + events[eventPos].time.tick, n.velocity);
+                        m_voices[n.note].noteOn(m_blockStart + events[eventPos].time.tick, n.velocity, n.note);
 					}
 				break;
 
@@ -343,6 +339,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
     m_blockStart += sampleCount;
 }
 
+//TODO this should belong to voice
 void
 SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 {
@@ -356,7 +353,7 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
     size_t i, s;
 
     float vgain = (float)(m_voices[voice].velocity) / 127.0f;
-	float freq = m_frequencies[voice] * centTable[(int) (*m_detune)];//TODO looks very unsafe
+	float freq = m_voices[voice].freq * centTable[(int) (*m_detune)];//TODO looks very unsafe
 	float phase_increment = freq / m_sampleRate;
 	
     for (i = 0; i < count; ++i) {
@@ -381,7 +378,6 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
 		if (m_voices[voice].phase > 1.0f)
 			m_voices[voice].phase -= (int) m_voices[voice].phase;
 
-		
 		m_output[offset + i] += gain * waveTable.calculate(m_voices[voice].phase);
 	}
 }
