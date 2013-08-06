@@ -39,7 +39,7 @@ private:
     Settings *m_settings;
 
 public:
-    long on;
+    long m_on;
     float phase;
     long off;
     int velocity;
@@ -100,14 +100,14 @@ private:
     Voice  m_voices[Notes];
 };
 
-Voice::Voice() : phase(0), on(-1), off(-1), velocity(0), freq(1)
+Voice::Voice() : phase(0), m_on(-1), off(-1), velocity(0), freq(1)
 {
 }
 
 void
 Voice::reset() {
     phase = 0;
-    on = -1;
+    m_on = -1;
     off = -1;
     velocity = 0;
     freq = 1;
@@ -122,7 +122,7 @@ Voice::setSettings(Settings *settings)
 void
 Voice::noteOn(long tick, int velocity, int pitch)
 {
-    on = tick;
+    m_on = tick;
     off = -1;
     this->velocity = velocity;
     freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
@@ -350,9 +350,9 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 void
 SimpleSynth::addSamples(float *buffer, int voice, unsigned long offset, unsigned long count)
 {
-    if (m_voices[voice].on < 0) return;
+    if (m_voices[voice].m_on < 0) return;
 
-    unsigned long on = (unsigned long)(m_voices[voice].on);
+    unsigned long on = (unsigned long)(m_voices[voice].m_on);
     unsigned long start = m_settings->m_blockStart + offset;
 
     if (start < on) return;
@@ -376,7 +376,7 @@ SimpleSynth::addSamples(float *buffer, int voice, unsigned long offset, unsigned
 			unsigned long dist = i + start - m_voices[voice].off;
 
 			if (dist > release) {
-                m_voices[voice].on = -1;
+                m_voices[voice].m_on = -1;
 				break;
 			}
 
