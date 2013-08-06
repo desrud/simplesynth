@@ -98,12 +98,11 @@ private:
     Settings *m_settings;
 
 	WaveTable waveTable;
-	float centTable[101];
 
     Voice  m_voices[Notes];
 };
 
-Voice::Voice() : phase(0), on(-1), off(-1), velocity(0), freq(1) 
+Voice::Voice() : phase(0), on(-1), off(-1), velocity(0), freq(1)
 {
 }
 
@@ -214,11 +213,6 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     for (int i = 0; i < Notes; i++) {
         m_voices[i].setSettings(m_settings);
     }
-
-	for (int i = 0; i < 101; i++) {
-		float cent = powf(2.0, i / 1200.0);
-		centTable[i] = cent;
-	}
 }
 
 SimpleSynth::~SimpleSynth()
@@ -368,9 +362,11 @@ SimpleSynth::addSamples(int voice, unsigned long offset, unsigned long count)
     size_t i, s;
 
     float vgain = (float)(m_voices[voice].velocity) / 127.0f;
-	float freq = m_voices[voice].freq * centTable[(int) (*(m_settings->m_detune))];//TODO looks very unsafe
-	float phase_increment = freq / m_settings->m_sampleRate;
-	
+    float freq = m_voices[voice].freq;
+    float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
+    float freq_detuned = freq * centFactor;
+    float phase_increment = freq_detuned / m_settings->m_sampleRate;
+
     for (i = 0; i < count; ++i) {
 
 		float gain(vgain);
