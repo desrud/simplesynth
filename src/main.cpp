@@ -29,13 +29,8 @@
 #include "dssi.h"
 #include "ladspa.h"
 
-
+#include "Global.h"
 #include "WaveTable.h"
-
-struct Settings
-{
-    int m_sampleRate;
-};
 
 
 class Voice

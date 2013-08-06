@@ -4,6 +4,7 @@ plugindir = $(libdir)/dssi
 
 
 simplesynth_la_SOURCES = \
+  Global.h \
 	main.cpp \
 	WaveTable.cpp \
 	../dssi/dssi.h
