@@ -20,11 +20,14 @@
 #ifndef _SIMPLE_SYNTH_GLOBAL_H_
 #define _SIMPLE_SYNTH_GLOBAL_H_
 
+#include "WaveTable.h"
+
 struct Settings
 {
     int    m_sampleRate;
     float *m_detune;
     long   m_blockStart;
+    WaveTable waveTable;
 };
 
 #endif // __SIMPLE_SYNTH_GLOBAL_H_

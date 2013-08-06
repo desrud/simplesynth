@@ -88,16 +88,14 @@ private:
     static void selectProgram(LADSPA_Handle, unsigned long, unsigned long);
     static int getMidiController(LADSPA_Handle, unsigned long);
     static void runSynth(LADSPA_Handle, unsigned long,
-			 snd_seq_event_t *, unsigned long);
+        snd_seq_event_t *, unsigned long);
 
     void runImpl(unsigned long, snd_seq_event_t *, unsigned long);
     void addSamples(float*, int, unsigned long, unsigned long);
 
-	float *m_output;
+    float *m_output;
 
     Settings *m_settings;
-
-	WaveTable waveTable;
 
     Voice  m_voices[Notes];
 };
@@ -389,7 +387,7 @@ SimpleSynth::addSamples(float *buffer, int voice, unsigned long offset, unsigned
 		if (m_voices[voice].phase > 1.0f)
 			m_voices[voice].phase -= (int) m_voices[voice].phase;
 
-		buffer[offset + i] += gain * waveTable.calculate(m_voices[voice].phase);
+        buffer[offset + i] += gain * m_settings->waveTable.calculate(m_voices[voice].phase);
 	}
 }
 
