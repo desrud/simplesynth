@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * simple-synth
  * Copyright (C) drd 2013 <drd@muh>
@@ -35,8 +35,8 @@ class SynthGUI : public QFrame
 
 public:
     SynthGUI(const char * host, const char * port,
-	     QByteArray controlPath, QByteArray midiPath, QByteArray programPath,
-	     QByteArray exitingPath, QWidget *w = 0);
+         QByteArray controlPath, QByteArray midiPath, QByteArray programPath,
+         QByteArray exitingPath, QWidget *w = 0);
     virtual ~SynthGUI();
 
     bool ready() const { return m_ready; }

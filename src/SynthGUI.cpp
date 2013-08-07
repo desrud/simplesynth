@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * simple-synth
  * Copyright (C) drd 2013 <drd@muh>
@@ -37,9 +37,9 @@ static int handle_x11_error(Display *dpy, XErrorEvent *err)
     char errstr[256];
     XGetErrorText(dpy, err->error_code, errstr, 256);
     if (err->error_code != BadWindow) {
-	std::cerr << "X Error: "
-		  << errstr << " " << err->error_code
-		  << "\nin major opcode:  " << err->request_code << std::endl;
+    std::cerr << "X Error: "
+          << errstr << " " << err->error_code
+          << "\nin major opcode:  " << err->request_code << std::endl;
     }
     return 0;
 }
@@ -54,8 +54,8 @@ lo_server osc_server = 0;
 static QTextStream cerr(stderr);
 
 SynthGUI::SynthGUI(const char * host, const char * port,
-		   QByteArray controlPath, QByteArray midiPath, QByteArray programPath,
-		   QByteArray exitingPath, QWidget *w) :
+           QByteArray controlPath, QByteArray midiPath, QByteArray programPath,
+           QByteArray exitingPath, QWidget *w) :
     QFrame(w),
     m_controlPath(controlPath),
     m_midiPath(midiPath),
@@ -106,9 +106,9 @@ SynthGUI::detuneChanged(int value)
     m_detuneLabel->setText(QString("%1 Cent").arg(cent));
 
     if (!m_suppressHostUpdate) {
-		cerr << "Sending to host: " << m_controlPath
-			 << " port " << SIMPLESYNTH_PORT_DETUNE << " freq " << cent << endl;
-		lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_DETUNE, cent);
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_DETUNE << " freq " << cent << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_DETUNE, cent);
     }
 }
 
@@ -116,7 +116,7 @@ void
 SynthGUI::oscRecv()
 {
     if (osc_server) {
-		lo_server_recv_noblock(osc_server, 1);
+        lo_server_recv_noblock(osc_server, 1);
     }
 }
 
@@ -148,22 +148,22 @@ void
 osc_error(int num, const char *msg, const char *path)
 {
     cerr << "Error: liblo server error " << num
-	 << " in path \"" << (path ? path : "(null)")
-	 << "\": " << msg << endl;
+     << " in path \"" << (path ? path : "(null)")   
+     << "\": " << msg << endl;
 }
 
 int
 debug_handler(const char *path, const char *types, lo_arg **argv,
-	      int argc, void *data, void *user_data)
+          int argc, void *data, void *user_data)
 {
     int i;
 
     cerr << "Warning: unhandled OSC message in GUI:" << endl;
 
     for (i = 0; i < argc; ++i) {
-	cerr << "arg " << i << ": type '" << types[i] << "': ";
+    cerr << "arg " << i << ": type '" << types[i] << "': ";
         lo_arg_pp((lo_type)types[i], argv[i]);
-	cerr << endl;
+    cerr << endl;
     }
 
     cerr << "(path is <" << path << ">)" << endl;
@@ -172,7 +172,7 @@ debug_handler(const char *path, const char *types, lo_arg **argv,
 
 int
 program_handler(const char *path, const char *types, lo_arg **argv,
-	       int argc, void *data, void *user_data)
+           int argc, void *data, void *user_data)
 {
     cerr << "Program handler not yet implemented" << endl;
     return 0;
@@ -180,21 +180,21 @@ program_handler(const char *path, const char *types, lo_arg **argv,
 
 int
 configure_handler(const char *path, const char *types, lo_arg **argv,
-		  int argc, void *data, void *user_data)
+          int argc, void *data, void *user_data)
 {
     return 0;
 }
 
 int
 rate_handler(const char *path, const char *types, lo_arg **argv,
-	     int argc, void *data, void *user_data)
+         int argc, void *data, void *user_data)
 {
     return 0; /* ignore it */
 }
 
 int
 show_handler(const char *path, const char *types, lo_arg **argv,
-	     int argc, void *data, void *user_data)
+         int argc, void *data, void *user_data)
 {
     SynthGUI *gui = static_cast<SynthGUI *>(user_data);
     while (!gui->ready()) sleep(1);
@@ -205,7 +205,7 @@ show_handler(const char *path, const char *types, lo_arg **argv,
 
 int
 hide_handler(const char *path, const char *types, lo_arg **argv,
-	     int argc, void *data, void *user_data)
+         int argc, void *data, void *user_data)
 {
     SynthGUI *gui = static_cast<SynthGUI *>(user_data);
     gui->hide();
@@ -214,7 +214,7 @@ hide_handler(const char *path, const char *types, lo_arg **argv,
 
 int
 quit_handler(const char *path, const char *types, lo_arg **argv,
-	     int argc, void *data, void *user_data)
+         int argc, void *data, void *user_data)
 {
     SynthGUI *gui = static_cast<SynthGUI *>(user_data);
     gui->setHostRequestedQuit(true);
@@ -224,13 +224,13 @@ quit_handler(const char *path, const char *types, lo_arg **argv,
 
 int
 control_handler(const char *path, const char *types, lo_arg **argv,
-		int argc, void *data, void *user_data)
+        int argc, void *data, void *user_data)
 {
     SynthGUI *gui = static_cast<SynthGUI *>(user_data);
 
     if (argc < 2) {
-		cerr << "Error: too few arguments to control_handler" << endl;
-		return 1;
+        cerr << "Error: too few arguments to control_handler" << endl;
+        return 1;
     }
 
     const int port = argv[0]->i;
@@ -239,7 +239,7 @@ control_handler(const char *path, const char *types, lo_arg **argv,
     switch (port) {
 
     default:
-		cerr << "Warning: received request to set nonexistent port " << port << endl;
+        cerr << "Warning: received request to set nonexistent port " << port << endl;
     }
 
     return 0;
@@ -253,14 +253,14 @@ main(int argc, char **argv)
     QApplication application(argc, argv);
 
     if (application.argc() != 5) {
-	cerr << "usage: "
-	     << application.argv()[0] 
-	     << " <osc url>"
-	     << " <plugin dllname>"
-	     << " <plugin label>"
-	     << " <user-friendly id>"
-	     << endl;
-	return 2;
+    cerr << "usage: "
+         << application.argv()[0] 
+         << " <osc url>"
+         << " <plugin dllname>"
+         << " <plugin label>"
+         << " <user-friendly id>"
+         << endl;
+    return 2;
     }
 
 #ifdef Q_WS_X11
@@ -274,12 +274,12 @@ main(int argc, char **argv)
     char *path = lo_url_get_path(url);
 
     SynthGUI gui(host, port,
-		 QByteArray(path) + "/control",
-		 QByteArray(path) + "/midi",
-		 QByteArray(path) + "/program",
-		 QByteArray(path) + "/exiting",
-		 0);
-		 
+         QByteArray(path) + "/control",
+         QByteArray(path) + "/midi",
+         QByteArray(path) + "/program",
+         QByteArray(path) + "/exiting",
+         0);
+
     QByteArray myControlPath = QByteArray(path) + "/control";
     QByteArray myProgramPath = QByteArray(path) + "/program";
     QByteArray myConfigurePath = QByteArray(path) + "/configure";
@@ -300,9 +300,9 @@ main(int argc, char **argv)
 
     lo_address hostaddr = lo_address_new(host, port);
     lo_send(hostaddr,
-	    QByteArray(path) + "/update",
-	    "s",
-	    (QByteArray(lo_server_get_url(osc_server))+QByteArray(path+1)).data());
+        QByteArray(path) + "/update",
+        "s",
+        (QByteArray(lo_server_get_url(osc_server))+QByteArray(path+1)).data());
 
     QObject::connect(&application, SIGNAL(aboutToQuit()), &gui, SLOT(aboutToQuit()));
 

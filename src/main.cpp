@@ -43,13 +43,13 @@ private:
     ~SimpleSynth();
 
     enum {
-		OutputPort = 0,
-		Detune = 1,
-		PortCount  = 2
+        OutputPort = 0,
+        Detune = 1,
+        PortCount  = 2
     };
 
     enum {
-		Notes = 128
+        Notes = 128
     };
 
     static const char *const portNames[PortCount];
@@ -183,7 +183,7 @@ SimpleSynth::instantiate(const LADSPA_Descriptor *, unsigned long rate)
 
 void
 SimpleSynth::connectPort(LADSPA_Handle handle,
-		      unsigned long port, LADSPA_Data *location)
+              unsigned long port, LADSPA_Data *location)
 {
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
@@ -229,8 +229,8 @@ int
 SimpleSynth::getMidiController(LADSPA_Handle, unsigned long port)
 {
     int controllers[PortCount] = {
-		DSSI_NONE,
-		DSSI_CC(70)
+        DSSI_NONE,
+        DSSI_CC(70)
     };
 
     return controllers[port];
@@ -238,7 +238,7 @@ SimpleSynth::getMidiController(LADSPA_Handle, unsigned long port)
 
 void
 SimpleSynth::runSynth(LADSPA_Handle handle, unsigned long samples,
-		       snd_seq_event_t *events, unsigned long eventCount)
+               snd_seq_event_t *events, unsigned long eventCount)
 {
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
@@ -247,8 +247,8 @@ SimpleSynth::runSynth(LADSPA_Handle handle, unsigned long samples,
 
 void
 SimpleSynth::runImpl(unsigned long sampleCount,
-		  snd_seq_event_t *events,
-		  unsigned long eventCount)
+          snd_seq_event_t *events,
+          unsigned long eventCount)
 {
     unsigned long pos;
     unsigned long count;
@@ -258,39 +258,39 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 
     for (pos = 0, eventPos = 0; pos < sampleCount; ) {
 
-		while (eventPos < eventCount &&
-			   pos >= events[eventPos].time.tick) {
+        while (eventPos < eventCount &&
+               pos >= events[eventPos].time.tick) {
 
-			switch (events[eventPos].type) {
+            switch (events[eventPos].type) {
 
-				case SND_SEQ_EVENT_NOTEON:
-					n = events[eventPos].data.note;
-					if (n.velocity > 0) {
+                case SND_SEQ_EVENT_NOTEON:
+                    n = events[eventPos].data.note;
+                    if (n.velocity > 0) {
                         m_voices[n.note].noteOn(m_settings->m_blockStart + events[eventPos].time.tick, n.velocity, n.note);
-					}
-				break;
+                    }
+                break;
 
-				case SND_SEQ_EVENT_NOTEOFF:
-					n = events[eventPos].data.note;
+                case SND_SEQ_EVENT_NOTEOFF:
+                    n = events[eventPos].data.note;
                     m_voices[n.note].off = m_settings->m_blockStart + events[eventPos].time.tick;
-					break;
+                break;
 
-					default:
-				break;
-			}
+                default:
+                break;
+            }
 
-			++eventPos;
-		}
+            ++eventPos;
+        }
 
-		count = sampleCount - pos;
-		if (eventPos < eventCount &&
-			events[eventPos].time.tick < sampleCount) {
-			count = events[eventPos].time.tick - pos;
-		}
+        count = sampleCount - pos;
+        if (eventPos < eventCount &&
+            events[eventPos].time.tick < sampleCount) {
+            count = events[eventPos].time.tick - pos;
+        }
 
-		for (i = 0; i < count; ++i) {
-			m_output[pos + i] = 0;
-		}
+        for (i = 0; i < count; ++i) {
+            m_output[pos + i] = 0;
+        }
 
         for (i = 0; i < Notes; ++i) {
             m_voices[i].addSamples(m_output, pos, count);
