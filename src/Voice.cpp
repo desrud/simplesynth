@@ -58,6 +58,8 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 {
     if (m_on < 0) return;
 
+    float releaseSec = 1;
+
     unsigned long on = (unsigned long)(m_on);
     unsigned long start = m_settings->m_blockStart + offset;
 
@@ -77,7 +79,7 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
         //TODO looks like an envelope - only release
         if (off >= 0 && (unsigned long)(off) < i + start) {
 
-            unsigned long release = 1 + (0.01 * m_settings->m_sampleRate);
+            unsigned long release = 1 + (releaseSec * m_settings->m_sampleRate);
             unsigned long dist = i + start - off;
 
             if (dist > release) {
