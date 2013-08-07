@@ -161,7 +161,7 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_settings->m_sampleRate = sampleRate;
     m_settings->m_detune = 0;
     m_settings->m_blockStart = 0;
-    m_settings->m_waveTable = new WaveTable(saw_data, saw_size);
+    m_settings->m_waveTable = new WaveTable(sine_data, sine_size);
 
     for (int i = 0; i < Notes; i++) {
         m_voices[i].setSettings(m_settings);
