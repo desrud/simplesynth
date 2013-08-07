@@ -87,7 +87,7 @@ const char *const
 SimpleSynth::portNames[PortCount] =
 {
     "Output",
-	"Detune",
+    "Detune",
 };
 
 const LADSPA_PortDescriptor 
@@ -161,6 +161,7 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_settings->m_sampleRate = sampleRate;
     m_settings->m_detune = 0;
     m_settings->m_blockStart = 0;
+    m_settings->m_waveTable = new WaveTable(saw_data, saw_size);
 
     for (int i = 0; i < Notes; i++) {
         m_voices[i].setSettings(m_settings);
@@ -169,6 +170,7 @@ SimpleSynth::SimpleSynth(int sampleRate) :
 
 SimpleSynth::~SimpleSynth()
 {
+    delete m_settings->m_waveTable;
     delete m_settings;
 }
     

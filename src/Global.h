@@ -27,7 +27,7 @@ struct Settings
     int    m_sampleRate;
     float *m_detune;
     long   m_blockStart;
-    WaveTable waveTable;
+    WaveTable *m_waveTable;
 };
 
 #endif // __SIMPLE_SYNTH_GLOBAL_H_

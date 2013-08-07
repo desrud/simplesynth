@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * simple-synth
  * Copyright (C) drd 2013 <drd@muh>
@@ -19,11 +19,27 @@
 
 #include "WaveTable.h"
 
-const float
-WaveTable::calculate(float phase)
+WaveTable::WaveTable(const float* data, const int size)
 {
-	//TODO atm only square ... should be more general with some interpolation
-	return (phase > 0.5) ? 1.0 : -1.0;
+    m_size = size;
+    m_data = new float[m_size + 1];
+
+    for (int i = 0; i <= size; ++i) {
+        m_data[i] = data[i];
+    }
+    m_data[m_size] = m_data[0];
+}
+
+WaveTable::~WaveTable() {
+    delete[] m_data;
+}
+
+const float
+WaveTable::calculate(const float phase)
+{
+    //phase is in [0, 1]
+    int idx = int(phase * m_size);
+    return (m_data[idx]);//TODO some interpolation
 }
 
 
