@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -78,6 +79,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@HAVE_LIBLO_TRUE@@HAVE_QT_TRUE@lts_ui_PROGRAMS =  \
+@HAVE_LIBLO_TRUE@@HAVE_QT_TRUE@	simplesynth_qt$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -116,11 +119,11 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(plugindir)"
+am__installdirs = "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(lts_uidir)"
 LTLIBRARIES = $(plugin_LTLIBRARIES)
 simplesynth_la_LIBADD =
-am_simplesynth_la_OBJECTS = simplesynth_la-main.lo \
-	simplesynth_la-WaveTable.lo
+am_simplesynth_la_OBJECTS = simplesynth_la-Voice.lo \
+	simplesynth_la-main.lo simplesynth_la-WaveTable.lo
 simplesynth_la_OBJECTS = $(am_simplesynth_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -130,6 +133,19 @@ simplesynth_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
 	$(simplesynth_la_CXXFLAGS) $(CXXFLAGS) \
 	$(simplesynth_la_LDFLAGS) $(LDFLAGS) -o $@
+PROGRAMS = $(lts_ui_PROGRAMS)
+am_simplesynth_qt_OBJECTS = simplesynth_qt-SynthGUI.$(OBJEXT)
+am__objects_1 = simplesynth_qt-SynthGUI.moc.$(OBJEXT)
+nodist_simplesynth_qt_OBJECTS = $(am__objects_1)
+simplesynth_qt_OBJECTS = $(am_simplesynth_qt_OBJECTS) \
+	$(nodist_simplesynth_qt_OBJECTS)
+am__DEPENDENCIES_1 =
+simplesynth_qt_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+simplesynth_qt_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -182,8 +198,9 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(simplesynth_la_SOURCES)
-DIST_SOURCES = $(simplesynth_la_SOURCES)
+SOURCES = $(simplesynth_la_SOURCES) $(simplesynth_qt_SOURCES) \
+	$(nodist_simplesynth_qt_SOURCES)
+DIST_SOURCES = $(simplesynth_la_SOURCES) $(simplesynth_qt_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -239,8 +256,6 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GREP = @GREP@
-GTKMM_CFLAGS = @GTKMM_CFLAGS@
-GTKMM_LIBS = @GTKMM_LIBS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -248,6 +263,8 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBLO_CFLAGS = @LIBLO_CFLAGS@
+LIBLO_LIBS = @LIBLO_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -274,6 +291,9 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+QT_CFLAGS = @QT_CFLAGS@
+QT_LIBS = @QT_LIBS@
+QT_MOC = @QT_MOC@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -336,14 +356,28 @@ top_srcdir = @top_srcdir@
 plugin_LTLIBRARIES = simplesynth.la
 plugindir = $(libdir)/dssi
 simplesynth_la_SOURCES = \
-	main.cpp \
-	WaveTable.cpp \
-	../dssi/dssi.h
+  Global.h \
+  Voice.cpp \
+  main.cpp \
+  WaveTable.cpp \
+  ../dssi/dssi.h
 
-simplesynth_la_CXXFLAGS = -I$(top_srcdir)/dssi $(AM_CFLAGS) $(GTKMM_CFLAGS)
+simplesynth_la_CXXFLAGS = -I$(top_srcdir)/dssi $(AM_CFLAGS)
 simplesynth_la_LDFLAGS = -module -avoid-version
+lts_uidir = $(libdir)/dssi/simplesynth
+SIMPLESYNTH_MOC = SynthGUI.moc.cpp
+simplesynth_qt_SOURCES = \
+	SynthGUI.cpp\
+	SynthGUI.h
+
+nodist_simplesynth_qt_SOURCES = $(SIMPLESYNTH_MOC)
+simplesynth_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_CFLAGS) $(LIBLO_CFLAGS)
+simplesynth_qt_LDADD = $(AM_LDFLAGS) $(QT_LIBS) $(LIBLO_LIBS)
+@HAVE_QT_FALSE@BUILT_SOURCES = 
+@HAVE_QT_TRUE@BUILT_SOURCES = $(SIMPLESYNTH_MOC)
 CLEANFILES = $(BUILT_SOURCES)
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
@@ -415,6 +449,59 @@ clean-pluginLTLIBRARIES:
 
 simplesynth.la: $(simplesynth_la_OBJECTS) $(simplesynth_la_DEPENDENCIES) $(EXTRA_simplesynth_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(simplesynth_la_LINK) -rpath $(plugindir) $(simplesynth_la_OBJECTS) $(simplesynth_la_LIBADD) $(LIBS)
+install-lts_uiPROGRAMS: $(lts_ui_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	@list='$(lts_ui_PROGRAMS)'; test -n "$(lts_uidir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(lts_uidir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(lts_uidir)" || exit 1; \
+	fi; \
+	for p in $$list; do echo "$$p $$p"; done | \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p \
+	 || test -f $$p1 \
+	  ; then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n;h' \
+	    -e 's|.*|.|' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	    test -z "$$files" || { \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(lts_uidir)$$dir'"; \
+	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(lts_uidir)$$dir" || exit $$?; \
+	    } \
+	; done
+
+uninstall-lts_uiPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lts_ui_PROGRAMS)'; test -n "$(lts_uidir)" || list=; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/' \
+	`; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(lts_uidir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(lts_uidir)" && rm -f $$files
+
+clean-lts_uiPROGRAMS:
+	@list='$(lts_ui_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
+
+simplesynth_qt$(EXEEXT): $(simplesynth_qt_OBJECTS) $(simplesynth_qt_DEPENDENCIES) $(EXTRA_simplesynth_qt_DEPENDENCIES) 
+	@rm -f simplesynth_qt$(EXEEXT)
+	$(AM_V_CXXLD)$(simplesynth_qt_LINK) $(simplesynth_qt_OBJECTS) $(simplesynth_qt_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -422,8 +509,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplesynth_la-Voice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplesynth_la-WaveTable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplesynth_la-main.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplesynth_qt-SynthGUI.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplesynth_qt-SynthGUI.moc.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -446,6 +536,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
+simplesynth_la-Voice.lo: Voice.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_la_CXXFLAGS) $(CXXFLAGS) -MT simplesynth_la-Voice.lo -MD -MP -MF $(DEPDIR)/simplesynth_la-Voice.Tpo -c -o simplesynth_la-Voice.lo `test -f 'Voice.cpp' || echo '$(srcdir)/'`Voice.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simplesynth_la-Voice.Tpo $(DEPDIR)/simplesynth_la-Voice.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Voice.cpp' object='simplesynth_la-Voice.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_la_CXXFLAGS) $(CXXFLAGS) -c -o simplesynth_la-Voice.lo `test -f 'Voice.cpp' || echo '$(srcdir)/'`Voice.cpp
+
 simplesynth_la-main.lo: main.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_la_CXXFLAGS) $(CXXFLAGS) -MT simplesynth_la-main.lo -MD -MP -MF $(DEPDIR)/simplesynth_la-main.Tpo -c -o simplesynth_la-main.lo `test -f 'main.cpp' || echo '$(srcdir)/'`main.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simplesynth_la-main.Tpo $(DEPDIR)/simplesynth_la-main.Plo
@@ -459,6 +556,34 @@ simplesynth_la-WaveTable.lo: WaveTable.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='WaveTable.cpp' object='simplesynth_la-WaveTable.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_la_CXXFLAGS) $(CXXFLAGS) -c -o simplesynth_la-WaveTable.lo `test -f 'WaveTable.cpp' || echo '$(srcdir)/'`WaveTable.cpp
+
+simplesynth_qt-SynthGUI.o: SynthGUI.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -MT simplesynth_qt-SynthGUI.o -MD -MP -MF $(DEPDIR)/simplesynth_qt-SynthGUI.Tpo -c -o simplesynth_qt-SynthGUI.o `test -f 'SynthGUI.cpp' || echo '$(srcdir)/'`SynthGUI.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simplesynth_qt-SynthGUI.Tpo $(DEPDIR)/simplesynth_qt-SynthGUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SynthGUI.cpp' object='simplesynth_qt-SynthGUI.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -c -o simplesynth_qt-SynthGUI.o `test -f 'SynthGUI.cpp' || echo '$(srcdir)/'`SynthGUI.cpp
+
+simplesynth_qt-SynthGUI.obj: SynthGUI.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -MT simplesynth_qt-SynthGUI.obj -MD -MP -MF $(DEPDIR)/simplesynth_qt-SynthGUI.Tpo -c -o simplesynth_qt-SynthGUI.obj `if test -f 'SynthGUI.cpp'; then $(CYGPATH_W) 'SynthGUI.cpp'; else $(CYGPATH_W) '$(srcdir)/SynthGUI.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simplesynth_qt-SynthGUI.Tpo $(DEPDIR)/simplesynth_qt-SynthGUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SynthGUI.cpp' object='simplesynth_qt-SynthGUI.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -c -o simplesynth_qt-SynthGUI.obj `if test -f 'SynthGUI.cpp'; then $(CYGPATH_W) 'SynthGUI.cpp'; else $(CYGPATH_W) '$(srcdir)/SynthGUI.cpp'; fi`
+
+simplesynth_qt-SynthGUI.moc.o: SynthGUI.moc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -MT simplesynth_qt-SynthGUI.moc.o -MD -MP -MF $(DEPDIR)/simplesynth_qt-SynthGUI.moc.Tpo -c -o simplesynth_qt-SynthGUI.moc.o `test -f 'SynthGUI.moc.cpp' || echo '$(srcdir)/'`SynthGUI.moc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simplesynth_qt-SynthGUI.moc.Tpo $(DEPDIR)/simplesynth_qt-SynthGUI.moc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SynthGUI.moc.cpp' object='simplesynth_qt-SynthGUI.moc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -c -o simplesynth_qt-SynthGUI.moc.o `test -f 'SynthGUI.moc.cpp' || echo '$(srcdir)/'`SynthGUI.moc.cpp
+
+simplesynth_qt-SynthGUI.moc.obj: SynthGUI.moc.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -MT simplesynth_qt-SynthGUI.moc.obj -MD -MP -MF $(DEPDIR)/simplesynth_qt-SynthGUI.moc.Tpo -c -o simplesynth_qt-SynthGUI.moc.obj `if test -f 'SynthGUI.moc.cpp'; then $(CYGPATH_W) 'SynthGUI.moc.cpp'; else $(CYGPATH_W) '$(srcdir)/SynthGUI.moc.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simplesynth_qt-SynthGUI.moc.Tpo $(DEPDIR)/simplesynth_qt-SynthGUI.moc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SynthGUI.moc.cpp' object='simplesynth_qt-SynthGUI.moc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(simplesynth_qt_CXXFLAGS) $(CXXFLAGS) -c -o simplesynth_qt-SynthGUI.moc.obj `if test -f 'SynthGUI.moc.cpp'; then $(CYGPATH_W) 'SynthGUI.moc.cpp'; else $(CYGPATH_W) '$(srcdir)/SynthGUI.moc.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -549,13 +674,15 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
-all-am: Makefile $(LTLIBRARIES)
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
 installdirs:
-	for dir in "$(DESTDIR)$(plugindir)"; do \
+	for dir in "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(lts_uidir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -586,10 +713,11 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-pluginLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-lts_uiPROGRAMS \
+	clean-pluginLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -609,7 +737,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-pluginLTLIBRARIES
+install-data-am: install-lts_uiPROGRAMS install-pluginLTLIBRARIES
 
 install-dvi: install-dvi-am
 
@@ -655,25 +783,29 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-pluginLTLIBRARIES
+uninstall-am: uninstall-lts_uiPROGRAMS uninstall-pluginLTLIBRARIES
 
-.MAKE: install-am install-strip
+.MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-pluginLTLIBRARIES cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
+	clean-libtool clean-lts_uiPROGRAMS clean-pluginLTLIBRARIES \
+	cscopelist-am ctags ctags-am distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-lts_uiPROGRAMS \
+	install-man install-pdf install-pdf-am \
 	install-pluginLTLIBRARIES install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-pluginLTLIBRARIES
+	uninstall-lts_uiPROGRAMS uninstall-pluginLTLIBRARIES
 
+
+%.moc.cpp: %.h
+	$(QT_MOC) -o $@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
