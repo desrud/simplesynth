@@ -23,13 +23,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-Voice::Voice() : phase(0), m_on(-1), off(-1), velocity(0), freq(1)
+Voice::Voice() : m_phase_osc1(0), m_phase_osc2(0), m_on(-1), off(-1), velocity(0), freq(1)
 {
 }
 
 void
 Voice::reset() {
-    phase = 0;
+    m_phase_osc1 = 0;
+    m_phase_osc2 = 0;
     m_on = -1;
     off = -1;
     velocity = 0;
@@ -66,7 +67,8 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 
     float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
     float freq_detuned = freq * centFactor;
-    float phase_increment = freq_detuned / m_settings->m_sampleRate;
+    float phase_inc1 = freq / m_settings->m_sampleRate;
+    float phase_inc2 = freq_detuned / m_settings->m_sampleRate;
 
     for (size_t i = 0; i < count; ++i) {
 
@@ -86,10 +88,17 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
             gain = gain * float(release - dist) / float(release);
         }
 
-        phase += phase_increment;
-        if (phase > 1.0f)
-            phase -= (int) phase;
+        m_phase_osc1 = incrementPhase(m_phase_osc1, phase_inc1);
+        m_phase_osc2 = incrementPhase(m_phase_osc2, phase_inc2);
 
-        buffer[offset + i] += gain * m_settings->waveTable.calculate(phase);
+        buffer[offset + i] += 0.5f * gain * m_settings->waveTable.calculate(m_phase_osc1);
+        buffer[offset + i] += 0.5f * gain * m_settings->waveTable.calculate(m_phase_osc2);
     }
+}
+
+float
+Voice::incrementPhase(float phase, float increment)
+{
+    float tmp = phase + increment;
+    return tmp - int(tmp);
 }

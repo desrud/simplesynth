@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * simple-synth
  * Copyright (C) drd 2013 <drd@muh>
@@ -27,9 +27,14 @@ class Voice
 private:
     Settings *m_settings;
 
-public:
     long m_on;
-    float phase;
+    float m_phase_osc1;
+    float m_phase_osc2;
+
+    float incrementPhase(float phase, float increment);
+
+public:
+
     long off;
     int velocity;
     float freq;
