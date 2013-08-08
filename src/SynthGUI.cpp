@@ -71,7 +71,7 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     QGridLayout *layout = new QGridLayout(this);
 
     m_detune  = newQDial(0, 100, 1, 0); // (Hz - 400) * 10
-    m_waveForm = newQDial(0, 5, 1, 0);
+    m_waveForm = newQDial(0, 4, 1, 0);
 
     m_detuneLabel = new QLabel(this);
     m_waveFormLabel = new QLabel(this);
@@ -131,7 +131,7 @@ SynthGUI::setWaveForm(float waveForm)
 void
 SynthGUI::waveFormChanged(int value)
 {
-    float waveForm = float(waveForm);
+    float waveForm = float(value);
     m_waveFormLabel->setText(QString("%1").arg(waveForm));
     if (!m_suppressHostUpdate) {
         cerr << "Sending to host: " << m_controlPath
