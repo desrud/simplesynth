@@ -43,8 +43,9 @@ private:
 
     enum {
         OutputPort = 0,
-        Detune = 1,
-        PortCount  = 2
+        WaveFormSelect = 1,
+        Detune = 2,
+        PortCount  = 3
     };
 
     enum {
@@ -93,6 +94,7 @@ const LADSPA_PortDescriptor
 SimpleSynth::ports[PortCount] =
 {
     LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO,     //Output
+    LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //WaveFormSelect
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Detune
 };
 
@@ -100,6 +102,8 @@ const LADSPA_PortRangeHint
 SimpleSynth::hints[PortCount] =
 {
     { 0, 0, 0 },                                                     //Output
+    { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
+      LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //WaveFormSelect
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
       LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //Detune
 };
@@ -187,8 +191,9 @@ SimpleSynth::connectPort(LADSPA_Handle handle,
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
     float **ports[PortCount] = {
-        &simpleSynth->m_output,
-        &simpleSynth->m_settings->m_detune,
+        &simpleSynth->m_output,                //Output
+        &simpleSynth->m_settings->m_waveForm,  //WaveFormSelect
+        &simpleSynth->m_settings->m_detune,    //Detune
     };
 
     *ports[port] = (float *)location;
@@ -271,7 +276,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
 
                 case SND_SEQ_EVENT_NOTEOFF:
                     n = events[eventPos].data.note;
-                    m_voices[n.note].off = m_settings->m_blockStart + events[eventPos].time.tick;
+                    m_voices[n.note].off = m_settings->m_blockStart + events[eventPos].time.tick;//TODO don't access off directly
                 break;
 
                 default:
