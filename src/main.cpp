@@ -17,7 +17,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <gtkmm.h>
 #include <iostream>
 
 #include <stdlib.h>
