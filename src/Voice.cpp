@@ -93,8 +93,10 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
         m_phase_osc1 = incrementPhase(m_phase_osc1, phase_inc1);
         m_phase_osc2 = incrementPhase(m_phase_osc2, phase_inc2);
 
-        buffer[offset + i] += 0.5f * gain * m_settings->m_waveTable->calculate(m_phase_osc1);
-        buffer[offset + i] += 0.5f * gain * m_settings->m_waveTable->calculate(m_phase_osc2);
+        WaveTable *waveTable = m_settings->m_waveTables[int(*m_settings->m_waveForm)];
+
+        buffer[offset + i] += 0.5f * gain * waveTable->calculate(m_phase_osc1);
+        buffer[offset + i] += 0.5f * gain * waveTable->calculate(m_phase_osc2);
     }
 }
 

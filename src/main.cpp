@@ -32,6 +32,8 @@
 #include "WaveTable.h"
 #include "Voice.h"
 
+const int numWaveTables = 5;
+
 class SimpleSynth
 {
 public:
@@ -87,6 +89,7 @@ const char *const
 SimpleSynth::portNames[PortCount] =
 {
     "Output",
+    "WaveForm",
     "Detune",
 };
 
@@ -164,7 +167,12 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_settings->m_sampleRate = sampleRate;
     m_settings->m_detune = 0;
     m_settings->m_blockStart = 0;
-    m_settings->m_waveTable = new WaveTable(pulse5_data, pulse5_size);
+    m_settings->m_waveTables = new WaveTable*[numWaveTables];
+    m_settings->m_waveTables[0] = new WaveTable(sine_data, sine_size);
+    m_settings->m_waveTables[1] = new WaveTable(saw_data, saw_size);
+    m_settings->m_waveTables[2] = new WaveTable(square_data, square_size);
+    m_settings->m_waveTables[3] = new WaveTable(pulse15_data, pulse15_size);
+    m_settings->m_waveTables[4] = new WaveTable(pulse5_data, pulse5_size);
 
     for (int i = 0; i < Notes; i++) {
         m_voices[i].setSettings(m_settings);
@@ -173,7 +181,11 @@ SimpleSynth::SimpleSynth(int sampleRate) :
 
 SimpleSynth::~SimpleSynth()
 {
-    delete m_settings->m_waveTable;
+    for (int i = 0; i < numWaveTables; i++) {
+        delete m_settings->m_waveTables[i];
+    }
+
+    delete[] m_settings->m_waveTables;
     delete m_settings;
 }
     
@@ -234,6 +246,7 @@ SimpleSynth::getMidiController(LADSPA_Handle, unsigned long port)
 {
     int controllers[PortCount] = {
         DSSI_NONE,
+        DSSI_CC(69),
         DSSI_CC(70)
     };
 

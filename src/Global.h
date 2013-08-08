@@ -28,7 +28,7 @@ struct Settings
     float *m_detune;
     float *m_waveForm;
     long   m_blockStart;
-    WaveTable *m_waveTable;
+    WaveTable **m_waveTables;
 };
 
 #endif // __SIMPLE_SYNTH_GLOBAL_H_
