@@ -47,7 +47,8 @@ static int handle_x11_error(Display *dpy, XErrorEvent *err)
 
 using std::endl;
 
-#define SIMPLESYNTH_PORT_DETUNE    1
+#define SIMPLESYNTH_PORT_WAVEFORM  1
+#define SIMPLESYNTH_PORT_DETUNE    2
 
 lo_server osc_server = 0;
 
@@ -70,18 +71,25 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     QGridLayout *layout = new QGridLayout(this);
 
     m_detune  = newQDial(0, 100, 1, 0); // (Hz - 400) * 10
+    m_waveForm = newQDial(0, 5, 1, 0);
 
     m_detuneLabel = new QLabel(this);
+    m_waveFormLabel = new QLabel(this);
 
     layout->addWidget(new QLabel("Detune", this), 0, 0, Qt::AlignCenter);
     layout->addWidget(m_detune,  1, 0);
-
     layout->addWidget(m_detuneLabel,  2, 0, Qt::AlignCenter);
 
+    layout->addWidget(new QLabel("WaveForm", this), 0, 1, Qt::AlignCenter);
+    layout->addWidget(m_waveForm, 1, 1);
+    layout->addWidget(m_waveFormLabel, 2, 1);
+
     connect(m_detune,  SIGNAL(valueChanged(int)), this, SLOT(detuneChanged(int)));
+    connect(m_waveForm, SIGNAL(valueChanged(int)), this, SLOT(waveFormChanged(int)));
 
     // cause some initial updates
-    detuneChanged (m_detune ->value());
+    detuneChanged (m_detune->value());
+    waveFormChanged(m_waveForm->value());
 
     QTimer *myTimer = new QTimer(this);
     connect(myTimer, SIGNAL(timeout()), this, SLOT(oscRecv()));
@@ -109,6 +117,26 @@ SynthGUI::detuneChanged(int value)
         cerr << "Sending to host: " << m_controlPath
              << " port " << SIMPLESYNTH_PORT_DETUNE << " freq " << cent << endl;
         lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_DETUNE, cent);
+    }
+}
+
+void
+SynthGUI::setWaveForm(float waveForm)
+{
+    m_suppressHostUpdate = true;
+    m_waveForm->setValue(int(waveForm));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::waveFormChanged(int value)
+{
+    float waveForm = float(waveForm);
+    m_waveFormLabel->setText(QString("%1").arg(waveForm));
+    if (!m_suppressHostUpdate) {
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_WAVEFORM << " waveForm " << waveForm << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_WAVEFORM, waveForm);
     }
 }
 

@@ -46,10 +46,12 @@ public:
 
 public slots:
     void setDetune (float cents);
+    void setWaveForm (float waveForm);
     void aboutToQuit();
 
 protected slots:
     void detuneChanged(int);
+    void waveFormChanged(int);
     void oscRecv();
 
 protected:
@@ -57,6 +59,8 @@ protected:
 
     QLabel *m_detuneLabel;
     QDial *m_detune;
+    QLabel *m_waveFormLabel;
+    QDial *m_waveForm;
 
     lo_address m_host;
     QByteArray m_controlPath;
