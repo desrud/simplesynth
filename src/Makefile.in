@@ -356,19 +356,19 @@ top_srcdir = @top_srcdir@
 plugin_LTLIBRARIES = simplesynth.la
 plugindir = $(libdir)/dssi
 simplesynth_la_SOURCES = \
-  Global.h \
-  Voice.cpp \
-  main.cpp \
-  WaveTable.cpp \
-  ../dssi/dssi.h
+	Global.h \
+	Voice.cpp \
+	main.cpp \
+	WaveTable.cpp \
+	../dssi/dssi.h
 
 simplesynth_la_CXXFLAGS = -I$(top_srcdir)/dssi $(AM_CFLAGS)
 simplesynth_la_LDFLAGS = -module -avoid-version
 lts_uidir = $(libdir)/dssi/simplesynth
 SIMPLESYNTH_MOC = SynthGUI.moc.cpp
 simplesynth_qt_SOURCES = \
-  SynthGUI.cpp\
-  SynthGUI.h
+	SynthGUI.cpp\
+	SynthGUI.h
 
 nodist_simplesynth_qt_SOURCES = $(SIMPLESYNTH_MOC)
 simplesynth_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_CFLAGS) $(LIBLO_CFLAGS)
@@ -805,7 +805,7 @@ uninstall-am: uninstall-lts_uiPROGRAMS uninstall-pluginLTLIBRARIES
 
 
 %.moc.cpp: %.h
-  $(QT_MOC) -o $@ $<
+	$(QT_MOC) -o $@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
