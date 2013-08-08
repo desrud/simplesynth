@@ -49,6 +49,8 @@ using std::endl;
 
 #define SIMPLESYNTH_PORT_WAVEFORM  1
 #define SIMPLESYNTH_PORT_DETUNE    2
+#define SIMPLESYNTH_PORT_RELEASE    3
+#define SIMPLESYNTH_PORT_VOLUME    4
 
 lo_server osc_server = 0;
 
@@ -72,9 +74,13 @@ SynthGUI::SynthGUI(const char * host, const char * port,
 
     m_detune  = newQDial(0, 100, 1, 0); // (Hz - 400) * 10
     m_waveForm = newQDial(0, 4, 1, 0);
+    m_release = newQDial(0, 1000, 10, 10);
+    m_volume = newQDial(0, 100, 1, 100);
 
     m_detuneLabel = new QLabel(this);
     m_waveFormLabel = new QLabel(this);
+    m_releaseLabel = new QLabel(this);
+    m_volumeLabel = new QLabel(this);
 
     layout->addWidget(new QLabel("Detune", this), 0, 0, Qt::AlignCenter);
     layout->addWidget(m_detune,  1, 0);
@@ -84,12 +90,24 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     layout->addWidget(m_waveForm, 1, 1);
     layout->addWidget(m_waveFormLabel, 2, 1);
 
+    layout->addWidget(new QLabel("Release", this), 0, 2, Qt::AlignCenter);
+    layout->addWidget(m_release, 1, 2);
+    layout->addWidget(m_releaseLabel, 2, 2);
+
+    layout->addWidget(new QLabel("Volume", this), 0, 3, Qt::AlignCenter);
+    layout->addWidget(m_volume, 1, 3);
+    layout->addWidget(m_volumeLabel, 2, 3);
+
     connect(m_detune,  SIGNAL(valueChanged(int)), this, SLOT(detuneChanged(int)));
     connect(m_waveForm, SIGNAL(valueChanged(int)), this, SLOT(waveFormChanged(int)));
+    connect(m_release, SIGNAL(valueChanged(int)), this, SLOT(releaseChanged(int)));
+    connect(m_volume, SIGNAL(valueChanged(int)), this, SLOT(volumeChanged(int)));
 
     // cause some initial updates
     detuneChanged (m_detune->value());
     waveFormChanged(m_waveForm->value());
+    releaseChanged(m_release->value());
+    volumeChanged(m_volume->value());
 
     QTimer *myTimer = new QTimer(this);
     connect(myTimer, SIGNAL(timeout()), this, SLOT(oscRecv()));
@@ -139,6 +157,47 @@ SynthGUI::waveFormChanged(int value)
         lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_WAVEFORM, waveForm);
     }
 }
+
+void
+SynthGUI::setRelease(float release)
+{
+    m_suppressHostUpdate = true;
+    m_release->setValue(int(release * 1000));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::releaseChanged(int value)
+{
+    float release = float(value) / 1000.0f;
+    m_releaseLabel->setText(QString("%1 ms").arg(release));
+    if (!m_suppressHostUpdate) {
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_RELEASE << " release " << release << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_RELEASE, release);
+    }
+}
+
+void
+SynthGUI::setVolume(float volume)
+{
+    m_suppressHostUpdate = true;
+    m_volume->setValue(int(volume * 100));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::volumeChanged(int value)
+{
+    float volume = float(value) / 100.0f;
+    m_volumeLabel->setText(QString("%1").arg(volume));
+    if (!m_suppressHostUpdate) {
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_VOLUME << " volume " << volume << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_VOLUME, volume);
+    }
+}
+
 
 void
 SynthGUI::oscRecv()

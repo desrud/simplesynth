@@ -47,7 +47,9 @@ private:
         OutputPort = 0,
         WaveFormSelect = 1,
         Detune = 2,
-        PortCount  = 3
+        Release = 3,
+        Volume = 4,
+        PortCount = 5
     };
 
     enum {
@@ -91,6 +93,8 @@ SimpleSynth::portNames[PortCount] =
     "Output",
     "WaveForm",
     "Detune",
+    "Release",
+    "Volume",
 };
 
 const LADSPA_PortDescriptor 
@@ -99,6 +103,8 @@ SimpleSynth::ports[PortCount] =
     LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO,     //Output
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //WaveFormSelect
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Detune
+    LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Release
+    LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Volume
 };
 
 const LADSPA_PortRangeHint 
@@ -109,6 +115,10 @@ SimpleSynth::hints[PortCount] =
       LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //WaveFormSelect
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
       LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //Detune
+    { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
+        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                           //Release
+    { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
+        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                           //Volume
 };
 
 const LADSPA_Properties
@@ -166,6 +176,8 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_settings = new Settings();
     m_settings->m_sampleRate = sampleRate;
     m_settings->m_detune = 0;
+    m_settings->m_release = 0;
+    m_settings->m_volume = 0;
     m_settings->m_blockStart = 0;
     m_settings->m_waveTables = new WaveTable*[numWaveTables];
     m_settings->m_waveTables[0] = new WaveTable(sine_data, sine_size);
@@ -206,6 +218,8 @@ SimpleSynth::connectPort(LADSPA_Handle handle,
         &simpleSynth->m_output,                //Output
         &simpleSynth->m_settings->m_waveForm,  //WaveFormSelect
         &simpleSynth->m_settings->m_detune,    //Detune
+        &simpleSynth->m_settings->m_release,   //Release
+        &simpleSynth->m_settings->m_volume,    //Volume
     };
 
     *ports[port] = (float *)location;
@@ -246,8 +260,10 @@ SimpleSynth::getMidiController(LADSPA_Handle, unsigned long port)
 {
     int controllers[PortCount] = {
         DSSI_NONE,
-        DSSI_CC(69),
-        DSSI_CC(70)
+        DSSI_CC(69),   //WaveForm
+        DSSI_CC(70),   //Detune
+        DSSI_CC(71),   //Release
+        DSSI_CC(72)    //Volume
     };
 
     return controllers[port];

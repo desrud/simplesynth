@@ -27,6 +27,8 @@ struct Settings
     int    m_sampleRate;
     float *m_detune;
     float *m_waveForm;
+    float *m_release;
+    float *m_volume;
     long   m_blockStart;
     WaveTable **m_waveTables;
 };

@@ -19,6 +19,7 @@
 
 #include "Voice.h"
 #include <math.h>
+#include <iostream>
 
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +59,7 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 {
     if (m_on < 0) return;
 
-    float releaseSec = 1;
+    float releaseSec = *m_settings->m_release;
 
     unsigned long on = (unsigned long)(m_on);
     unsigned long start = m_settings->m_blockStart + offset;
@@ -66,6 +67,10 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
     if (start < on) return;
 
     float vgain = (float)(velocity) / 127.0f;
+    float volume = *m_settings->m_volume;
+
+    //std::cerr << "vol: " << volume << std::endl;
+    vgain *= volume;
 
     float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
     float freq_detuned = freq * centFactor;

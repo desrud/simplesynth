@@ -22,7 +22,7 @@ static const uint qt_meta_data_SynthGUI[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -32,19 +32,25 @@ static const uint qt_meta_data_SynthGUI[] = {
  // slots: signature, parameters, type, tag, flags
       16,   10,    9,    9, 0x0a,
       42,   33,    9,    9, 0x0a,
-      61,    9,    9,    9, 0x0a,
-      75,    9,    9,    9, 0x09,
-      94,    9,    9,    9, 0x09,
-     115,    9,    9,    9, 0x09,
+      69,   61,    9,    9, 0x0a,
+      94,   87,    9,    9, 0x0a,
+     111,    9,    9,    9, 0x0a,
+     125,    9,    9,    9, 0x09,
+     144,    9,    9,    9, 0x09,
+     165,    9,    9,    9, 0x09,
+     185,    9,    9,    9, 0x09,
+     204,    9,    9,    9, 0x09,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_SynthGUI[] = {
     "SynthGUI\0\0cents\0setDetune(float)\0"
-    "waveForm\0setWaveForm(float)\0aboutToQuit()\0"
-    "detuneChanged(int)\0waveFormChanged(int)\0"
-    "oscRecv()\0"
+    "waveForm\0setWaveForm(float)\0release\0"
+    "setRelease(float)\0volume\0setVolume(float)\0"
+    "aboutToQuit()\0detuneChanged(int)\0"
+    "waveFormChanged(int)\0releaseChanged(int)\0"
+    "volumeChanged(int)\0oscRecv()\0"
 };
 
 void SynthGUI::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -55,10 +61,14 @@ void SynthGUI::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, vo
         switch (_id) {
         case 0: _t->setDetune((*reinterpret_cast< float(*)>(_a[1]))); break;
         case 1: _t->setWaveForm((*reinterpret_cast< float(*)>(_a[1]))); break;
-        case 2: _t->aboutToQuit(); break;
-        case 3: _t->detuneChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 4: _t->waveFormChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 5: _t->oscRecv(); break;
+        case 2: _t->setRelease((*reinterpret_cast< float(*)>(_a[1]))); break;
+        case 3: _t->setVolume((*reinterpret_cast< float(*)>(_a[1]))); break;
+        case 4: _t->aboutToQuit(); break;
+        case 5: _t->detuneChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 6: _t->waveFormChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 7: _t->releaseChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 8: _t->volumeChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 9: _t->oscRecv(); break;
         default: ;
         }
     }
@@ -96,9 +106,9 @@ int SynthGUI::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 10;
     }
     return _id;
 }
