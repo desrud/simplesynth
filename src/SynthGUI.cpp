@@ -325,6 +325,26 @@ control_handler(const char *path, const char *types, lo_arg **argv,
 
     switch (port) {
 
+    case SIMPLESYNTH_PORT_WAVEFORM:
+        cerr << "gui setting waveform to " << value << endl;
+        gui->setWaveForm(value);
+    break;
+
+    case SIMPLESYNTH_PORT_DETUNE:
+        cerr << "gui setting detune to " << value << endl;
+        gui->setDetune(value);
+    break;
+
+    case SIMPLESYNTH_PORT_RELEASE:
+        cerr << "gui setting release to " << value << endl;
+        gui->setRelease(value);
+    break;
+
+    case SIMPLESYNTH_PORT_VOLUME:
+        cerr << "gui setting volume to " << value << endl;
+        gui->setVolume(value);
+    break;
+
     default:
         cerr << "Warning: received request to set nonexistent port " << port << " to value " << value << endl;
     }
