@@ -32,7 +32,7 @@
 #include "WaveTable.h"
 #include "Voice.h"
 
-const int numWaveTables = 5;
+const int numWaveTables = 17;
 
 class SimpleSynth
 {
@@ -185,6 +185,18 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_settings->m_waveTables[2] = new WaveTable(square_data, square_size);
     m_settings->m_waveTables[3] = new WaveTable(pulse15_data, pulse15_size);
     m_settings->m_waveTables[4] = new WaveTable(pulse5_data, pulse5_size);
+    m_settings->m_waveTables[5] = new WaveTable(rnd1, 100);
+    m_settings->m_waveTables[6] = new WaveTable(rnd2, 100);
+    m_settings->m_waveTables[7] = new WaveTable(rnd3, 100);
+    m_settings->m_waveTables[8] = new WaveTable(rnd4, 100);
+    m_settings->m_waveTables[9] = new WaveTable(rnd5, 100);
+    m_settings->m_waveTables[10] = new WaveTable(rnd6, 100);
+    m_settings->m_waveTables[11] = new WaveTable(rnd7, 100);
+    m_settings->m_waveTables[12] = new WaveTable(rnd8, 100);
+    m_settings->m_waveTables[13] = new WaveTable(rnd9, 100);
+    m_settings->m_waveTables[14] = new WaveTable(rnd10, 100);
+    m_settings->m_waveTables[15] = new WaveTable(rnd11, 100);
+    m_settings->m_waveTables[16] = new WaveTable(rnd12, 100);
 
     for (int i = 0; i < Notes; i++) {
         m_voices[i].setSettings(m_settings);

@@ -73,7 +73,7 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     QGridLayout *layout = new QGridLayout(this);
 
     m_detune  = newQDial(0, 100, 1, 0); // (Hz - 400) * 10
-    m_waveForm = newQDial(0, 4, 1, 0);
+    m_waveForm = newQDial(0, 16, 1, 0);
     m_release = newQDial(0, 1000, 10, 10);
     m_volume = newQDial(0, 100, 1, 100);
 
@@ -326,7 +326,7 @@ control_handler(const char *path, const char *types, lo_arg **argv,
     switch (port) {
 
     default:
-        cerr << "Warning: received request to set nonexistent port " << port << endl;
+        cerr << "Warning: received request to set nonexistent port " << port << " to value " << value << endl;
     }
 
     return 0;
