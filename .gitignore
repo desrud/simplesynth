@@ -2,7 +2,6 @@
 *.lo
 *.la
 autom4te.cache/
-depcomp
 aclocal.m4
 src/.deps/
 src/.libs/
