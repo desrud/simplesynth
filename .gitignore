@@ -8,6 +8,5 @@ config.guess
 depcomp
 missing
 aclocal.m4
-config.sub
 src/.deps/
 src/.libs/
