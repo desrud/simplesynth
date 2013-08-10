@@ -5,9 +5,7 @@
 *.la
 autom4te.cache/
 config.guess
-configure
 depcomp
-install-sh
 missing
 aclocal.m4
 config.sub
