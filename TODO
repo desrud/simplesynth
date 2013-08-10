@@ -1,0 +1,4 @@
+* interpolation for wavetables
+* release controller for gui
+* better handling of voice allocation
+* exponential gain (use a wavetable?)
