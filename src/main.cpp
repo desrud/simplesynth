@@ -112,7 +112,7 @@ SimpleSynth::hints[PortCount] =
 {
     { 0, 0, 0 },                                                     //Output
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
-      LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //WaveFormSelect
+      LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, numWaveTables - 1 },     //WaveFormSelect
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
       LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //Detune
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
@@ -179,6 +179,9 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_settings->m_release = 0;
     m_settings->m_volume = 0;
     m_settings->m_blockStart = 0;
+
+    //TODO read waveTables from file
+
     m_settings->m_waveTables = new WaveTable*[numWaveTables];
     m_settings->m_waveTables[0] = new WaveTable(sine_data, sine_size);
     m_settings->m_waveTables[1] = new WaveTable(saw_data, saw_size);
@@ -243,6 +246,7 @@ SimpleSynth::activate(LADSPA_Handle handle)
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
     simpleSynth->m_settings->m_blockStart = 0;
+    *simpleSynth->m_settings->m_volume = 0.7f;
 
     for (size_t i = 0; i < Notes; ++i) {
         simpleSynth->m_voices[i].reset();
