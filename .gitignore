@@ -1,10 +1,8 @@
-*.sh
 *.o
 *.lo
 *.la
 autom4te.cache/
 depcomp
-missing
 aclocal.m4
 src/.deps/
 src/.libs/
