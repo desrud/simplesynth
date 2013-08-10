@@ -4,7 +4,6 @@
 *.lo
 *.la
 autom4te.cache/
-config.guess
 depcomp
 missing
 aclocal.m4
