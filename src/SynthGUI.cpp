@@ -227,7 +227,7 @@ SynthGUI::setResonance(float resonance)
 void
 SynthGUI::resonanceChanged(int value)
 {
-    float resonance = float(value);
+    float resonance = float(value) / 100.0f;
     m_resonanceLabel->setText(QString("%1").arg(resonance));
     if (!m_suppressHostUpdate) {
         cerr << "Sending to host: " << m_controlPath
