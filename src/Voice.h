@@ -37,6 +37,7 @@ private:
 public:
     LowPassFilter();
     float calculate(float input);
+    void reset();
     void setup(int sampleRate, float freq, float q);
 };
 

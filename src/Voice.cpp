@@ -30,6 +30,12 @@
 LowPassFilter::LowPassFilter() :
     m_a1(0), m_b0(0), m_b1(0)
 {
+    reset();
+}
+
+void
+LowPassFilter::reset()
+{
     for (int i = 0; i < zCount; i++) {
         m_z[i] = 0;
     }
@@ -98,7 +104,9 @@ Voice::noteOn(long tick, int velocity, int pitch)
     off = -1;
     this->velocity = velocity;
     freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
-    //TODO reset filter ... with current impl z needs resetting
+
+    //reset filter ... with current impl z needs resetting
+    m_filter.reset();
 }
 
 void
@@ -106,8 +114,7 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 {
     if (m_on < 0) return;
 
-    //TODO better way to caluculate cutoff freq from input
-    float cutoff = (*m_settings->m_cutoff) * 100.0f;
+    float cutoff = 50.0f * powf(1.082f, (*m_settings->m_cutoff) * 100.0f);
     m_filter.setup(m_settings->m_sampleRate, cutoff, *m_settings->m_q);
 
     float releaseSec = *m_settings->m_release;
@@ -154,7 +161,7 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
         float tmp = (waveTable->calculate(m_phase_osc1) + waveTable->calculate(m_phase_osc2)) * 0.5f * gain;
 
         //TODO wire filter
-        buffer[offset + i] = tmp;//m_filter.calculate(tmp);
+        buffer[offset + i] = m_filter.calculate(tmp);
     }
 }
 
