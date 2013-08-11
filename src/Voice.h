@@ -22,6 +22,25 @@
 
 #include "Global.h"
 
+ 
+const int zCount = 2;
+
+class LowPassFilter
+{
+private:
+    float m_b0;
+    float m_b1;
+    float m_a1;
+
+    float m_z[zCount];
+
+public:
+    LowPassFilter();
+    float calculate(float input);
+    void setup(int sampleRate, float freq, float q);
+};
+
+
 class Voice
 {
 private:
@@ -30,6 +49,7 @@ private:
     long m_on;
     float m_phase_osc1;
     float m_phase_osc2;
+    LowPassFilter m_filter;
 
     float incrementPhase(float phase, float increment);
 

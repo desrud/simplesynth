@@ -28,6 +28,8 @@ struct Settings
     float *m_detune;
     float *m_waveForm;
     float *m_release;
+    float *m_cutoff;
+    float *m_q;
     float *m_volume;
     long   m_blockStart;
     WaveTable **m_waveTables;
