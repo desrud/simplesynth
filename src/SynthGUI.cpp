@@ -49,8 +49,10 @@ using std::endl;
 
 #define SIMPLESYNTH_PORT_WAVEFORM  1
 #define SIMPLESYNTH_PORT_DETUNE    2
-#define SIMPLESYNTH_PORT_RELEASE    3
+#define SIMPLESYNTH_PORT_RELEASE   3
 #define SIMPLESYNTH_PORT_VOLUME    4
+#define SIMPLESYNTH_PORT_CUTOFF    5
+#define SIMPLESYNTH_PORT_RESONANCE 6
 
 lo_server osc_server = 0;
 
@@ -75,11 +77,15 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     m_detune  = newQDial(0, 100, 1, 0); // (Hz - 400) * 10
     m_waveForm = newQDial(0, 16, 1, 0);
     m_release = newQDial(0, 1000, 10, 10);
+    m_cutoff = newQDial(0, 100, 1, 100);
+    m_resonance = newQDial(0, 100, 1, 0);
     m_volume = newQDial(0, 100, 1, 100);
 
     m_detuneLabel = new QLabel(this);
     m_waveFormLabel = new QLabel(this);
     m_releaseLabel = new QLabel(this);
+    m_cutoffLabel = new QLabel(this);
+    m_resonanceLabel = new QLabel(this);
     m_volumeLabel = new QLabel(this);
 
     layout->addWidget(new QLabel("Detune", this), 0, 0, Qt::AlignCenter);
@@ -94,19 +100,31 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     layout->addWidget(m_release, 1, 2);
     layout->addWidget(m_releaseLabel, 2, 2);
 
-    layout->addWidget(new QLabel("Volume", this), 0, 3, Qt::AlignCenter);
-    layout->addWidget(m_volume, 1, 3);
-    layout->addWidget(m_volumeLabel, 2, 3);
+    layout->addWidget(new QLabel("Cutoff", this), 0, 3, Qt::AlignCenter);
+    layout->addWidget(m_cutoff, 1, 3);
+    layout->addWidget(m_cutoffLabel, 2, 3);
+
+    layout->addWidget(new QLabel("Resonance", this), 0, 4, Qt::AlignCenter);
+    layout->addWidget(m_resonance, 1, 4);
+    layout->addWidget(m_resonanceLabel, 2, 4);
+
+    layout->addWidget(new QLabel("Volume", this), 0, 5, Qt::AlignCenter);
+    layout->addWidget(m_volume, 1, 5);
+    layout->addWidget(m_volumeLabel, 2, 5);
 
     connect(m_detune,  SIGNAL(valueChanged(int)), this, SLOT(detuneChanged(int)));
     connect(m_waveForm, SIGNAL(valueChanged(int)), this, SLOT(waveFormChanged(int)));
     connect(m_release, SIGNAL(valueChanged(int)), this, SLOT(releaseChanged(int)));
+    connect(m_cutoff, SIGNAL(valueChanged(int)), this, SLOT(cutoffChanged(int)));
+    connect(m_resonance, SIGNAL(valueChanged(int)), this, SLOT(resonanceChanged(int)));
     connect(m_volume, SIGNAL(valueChanged(int)), this, SLOT(volumeChanged(int)));
 
     // cause some initial updates
     detuneChanged (m_detune->value());
     waveFormChanged(m_waveForm->value());
     releaseChanged(m_release->value());
+    cutoffChanged(m_cutoff->value());
+    resonanceChanged(m_resonance->value());
     volumeChanged(m_volume->value());
 
     QTimer *myTimer = new QTimer(this);
@@ -175,6 +193,46 @@ SynthGUI::releaseChanged(int value)
         cerr << "Sending to host: " << m_controlPath
              << " port " << SIMPLESYNTH_PORT_RELEASE << " release " << release << endl;
         lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_RELEASE, release);
+    }
+}
+
+void
+SynthGUI::setCutoff(float cutoff)
+{
+    m_suppressHostUpdate = true;
+    m_cutoff->setValue(int(cutoff * 100));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::cutoffChanged(int value)
+{
+    float cutoff = float(value) / 100.0f;
+    m_cutoffLabel->setText(QString("%1").arg(cutoff));
+    if (!m_suppressHostUpdate) {
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_CUTOFF << " cutoff " << cutoff << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_CUTOFF, cutoff);
+    }
+}
+
+void
+SynthGUI::setResonance(float resonance)
+{
+    m_suppressHostUpdate = true;
+    m_resonance->setValue(int(resonance * 100));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::resonanceChanged(int value)
+{
+    float resonance = float(value);
+    m_waveFormLabel->setText(QString("%1").arg(resonance));
+    if (!m_suppressHostUpdate) {
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_RESONANCE << " resonance " << resonance << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_RESONANCE, resonance);
     }
 }
 
@@ -338,6 +396,16 @@ control_handler(const char *path, const char *types, lo_arg **argv,
     case SIMPLESYNTH_PORT_RELEASE:
         cerr << "gui setting release to " << value << endl;
         gui->setRelease(value);
+    break;
+
+    case SIMPLESYNTH_PORT_CUTOFF:
+        cerr << "gui setting cutoff to " << value << endl;
+        gui->setCutoff(value);
+    break;
+
+    case SIMPLESYNTH_PORT_RESONANCE:
+        cerr << "gui setting resonance to " << value << endl;
+        gui->setResonance(value);
     break;
 
     case SIMPLESYNTH_PORT_VOLUME:

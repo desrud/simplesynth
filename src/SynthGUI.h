@@ -48,6 +48,8 @@ public slots:
     void setDetune (float cents);
     void setWaveForm (float waveForm);
     void setRelease (float release);
+    void setCutoff (float cutoff);
+    void setResonance (float resonance);
     void setVolume (float volume);
     void aboutToQuit();
 
@@ -55,6 +57,8 @@ protected slots:
     void detuneChanged(int);
     void waveFormChanged(int);
     void releaseChanged(int);
+    void cutoffChanged(int);
+    void resonanceChanged(int);
     void volumeChanged(int);
     void oscRecv();
 
@@ -67,6 +71,10 @@ protected:
     QDial *m_waveForm;
     QLabel *m_releaseLabel;
     QDial *m_release;
+    QLabel *m_cutoffLabel;
+    QDial *m_cutoff;
+    QLabel *m_resonanceLabel;
+    QDial *m_resonance;
     QLabel *m_volumeLabel;
     QDial *m_volume;
 
