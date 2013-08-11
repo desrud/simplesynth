@@ -22,6 +22,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
+#include <algorithm>
 
 #include <stdlib.h>
 #include <string.h>
@@ -122,10 +123,9 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 {
     if (m_on < 0) return;
 
-    std::cerr << "c in: " <<  *m_settings->m_cutoff << std::endl;
-    std::cerr << "q in: " <<  *m_settings->m_q << std::endl;
+    float cutoff = 50.0f * powf(1.0617f, (*m_settings->m_cutoff) * 100.0f);
+    cutoff = std::min(cutoff, float(m_settings->m_sampleRate / 2 -1));
 
-    float cutoff = 50.0f * powf(1.082f, (*m_settings->m_cutoff) * 100.0f);
     float q = powf(1.0641, *m_settings->m_q * 100.0f);
     m_filter.setup(m_settings->m_sampleRate, cutoff, q);
 
