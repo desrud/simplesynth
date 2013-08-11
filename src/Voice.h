@@ -23,14 +23,16 @@
 #include "Global.h"
 
  
-const int zCount = 2;
+const int zCount = 4;
 
 class LowPassFilter
 {
 private:
     float m_b0;
     float m_b1;
+    float m_b2;
     float m_a1;
+    float m_a2;
 
     float m_z[zCount];
 

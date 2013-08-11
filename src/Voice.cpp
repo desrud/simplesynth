@@ -28,7 +28,7 @@
 
 
 LowPassFilter::LowPassFilter() :
-    m_a1(0), m_b0(0), m_b1(0)
+    m_a1(0), m_a2(0), m_b0(0), m_b1(0), m_b2(0)
 {
     reset();
 }
@@ -46,31 +46,39 @@ LowPassFilter::setup(int sampleRate, float cutoff, float q)
 {
     //see http://freeverb3.sourceforge.net/iir_filter.shtml
 /*
-    H(S) = 1/( S + 1)
+    H(S) = 1/(S^2 + S/Q + 1)
     W = tan (PI*Fc/Fs)
-    N = 1/(1+W)
-    B0 = W*N
-    B1 = B0
-    A1 = N*(W-1) 
+    N = 1/(W^2 + W/Q + 1)
+    B0 = N*W^2
+    B1 = 2*B0
+    B2 = B0
+    A1 = 2*N*(W^2 - 1)
+    A2 = N*(W^2 - W/Q + 1) 
 */
     float w = tan(M_PI * cutoff / sampleRate);
-    float n = 1.0f / (1.0f + w);
-    m_b0 = w * n;
-    m_b1 = m_b0;
-    m_a1 = n * (w - 1.0f);
+    float n = 1.0f / ((w * w) + (w / q) + 1.0);
+    m_b0 = (w * w) * n;
+    m_b1 = 2 * m_b0;
+    m_b2 = m_b0;
+    m_a1 = 2.0f * n * ((w * w) - 1.0f);
+    m_a2 = n * ((w * w) - (w / q) + 1.0f);
 }
 
 float
 LowPassFilter::calculate(float input)
 {
 /*
-Acc = X*B0 + Z[0]*B1 - Z[1]*A1;
-Z[1] = Acc;
-Z[0] = X;
-X is an input of filter, Acc is an output. 
+    Acc = X*B0 + Z[0]*B1 + Z[1]*B2 - Z[2]*A1 - Z[3]*A2;
+    Z[3] = Z[2];
+    Z[2] = Acc;
+    Z[1] = Z[0];
+    Z[0] = X
+    X is an input of filter, Acc is an output. 
 */
-    float out = input * m_b0 + m_z[0] * m_b1 - m_z[1] * m_a1;
-    m_z[1] = out;
+    float out = input * m_b0 + m_z[0] * m_b1 + m_z[1] * m_b2 - m_z[2] * m_a1 - m_z[3] * m_a2;
+    m_z[3] = m_z[2];
+    m_z[2] = out;
+    m_z[1] = m_z[0];
     m_z[0] = input;
     return out;
 }
@@ -114,8 +122,12 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 {
     if (m_on < 0) return;
 
+    std::cerr << "c in: " <<  *m_settings->m_cutoff << std::endl;
+    std::cerr << "q in: " <<  *m_settings->m_q << std::endl;
+
     float cutoff = 50.0f * powf(1.082f, (*m_settings->m_cutoff) * 100.0f);
-    m_filter.setup(m_settings->m_sampleRate, cutoff, *m_settings->m_q);
+    float q = powf(1.0641, *m_settings->m_q * 100.0f);
+    m_filter.setup(m_settings->m_sampleRate, cutoff, q);
 
     float releaseSec = *m_settings->m_release;
 
