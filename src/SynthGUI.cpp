@@ -50,9 +50,9 @@ using std::endl;
 #define SIMPLESYNTH_PORT_WAVEFORM  1
 #define SIMPLESYNTH_PORT_DETUNE    2
 #define SIMPLESYNTH_PORT_RELEASE   3
-#define SIMPLESYNTH_PORT_VOLUME    4
-#define SIMPLESYNTH_PORT_CUTOFF    5
-#define SIMPLESYNTH_PORT_RESONANCE 6
+#define SIMPLESYNTH_PORT_CUTOFF    4
+#define SIMPLESYNTH_PORT_RESONANCE 5
+#define SIMPLESYNTH_PORT_VOLUME    6
 
 lo_server osc_server = 0;
 
@@ -228,7 +228,7 @@ void
 SynthGUI::resonanceChanged(int value)
 {
     float resonance = float(value);
-    m_waveFormLabel->setText(QString("%1").arg(resonance));
+    m_resonanceLabel->setText(QString("%1").arg(resonance));
     if (!m_suppressHostUpdate) {
         cerr << "Sending to host: " << m_controlPath
              << " port " << SIMPLESYNTH_PORT_RESONANCE << " resonance " << resonance << endl;
