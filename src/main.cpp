@@ -260,9 +260,12 @@ SimpleSynth::activate(LADSPA_Handle handle)
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
     simpleSynth->m_settings->m_blockStart = 0;
+    *simpleSynth->m_settings->m_waveForm = 4.0f;
+    *simpleSynth->m_settings->m_release = 0.05f;
     *simpleSynth->m_settings->m_volume = 0.7f;
-    *simpleSynth->m_settings->m_cutoff = 1.0f;
-    *simpleSynth->m_settings->m_q = 0.0f;
+    *simpleSynth->m_settings->m_cutoff = 0.9f;
+    *simpleSynth->m_settings->m_q = 0.02f;
+    *simpleSynth->m_settings->m_detune = 13.0f;
 
     for (size_t i = 0; i < Notes; ++i) {
         simpleSynth->m_voices[i].reset();
@@ -292,12 +295,12 @@ SimpleSynth::getMidiController(LADSPA_Handle, unsigned long port)
 {
     int controllers[PortCount] = {
         DSSI_NONE,
-        DSSI_CC(69),   //WaveForm
-        DSSI_CC(70),   //Detune
-        DSSI_CC(71),   //Release
-        DSSI_NONE,     //Cutoff
-        DSSI_NONE,     //Q
-        DSSI_CC(72)    //Volume
+        DSSI_NONE,   //WaveForm
+        DSSI_NONE,   //Detune
+        DSSI_NONE,   //Release
+        DSSI_NONE,   //Cutoff
+        DSSI_NONE,   //Q
+        DSSI_NONE    //Volume
     };
 
     return controllers[port];
