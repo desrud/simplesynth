@@ -347,7 +347,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
                     
                     n = events[eventPos].data.note;
                     cerr << "noteoff " << int(n.note) << endl;
-                    m_voices[n.note].off = m_settings->m_blockStart + events[eventPos].time.tick;//TODO don't access off directly
+                    m_voices[n.note].noteOff(m_settings->m_blockStart + events[eventPos].time.tick);
                 break;
 
                 default:

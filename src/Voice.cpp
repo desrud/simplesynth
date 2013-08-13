@@ -85,7 +85,7 @@ LowPassFilter::calculate(float input)
 }
 
 
-Voice::Voice() : m_phase_osc1(0), m_phase_osc2(0), m_on(-1), off(-1), velocity(0), freq(1), m_filter()
+Voice::Voice() : m_phase_osc1(0), m_phase_osc2(0), m_on(-1), m_off(-1), m_velocity(0), m_freq(1), m_filter()
 {
 }
 
@@ -94,9 +94,9 @@ Voice::reset() {
     m_phase_osc1 = 0;
     m_phase_osc2 = 0;
     m_on = -1;
-    off = -1;
-    velocity = 0;
-    freq = 1;
+    m_off = -1;
+    m_velocity = 0;
+    m_freq = 1;
 }
 
 void
@@ -116,12 +116,18 @@ Voice::noteOn(long tick, int velocity, int pitch)
 {
     m_on = tick;
 
-    off = -1;
-    this->velocity = velocity;
-    freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
+    m_off = -1;
+    m_velocity = velocity;
+    m_freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
 
     //reset filter ... with current impl z needs resetting
     m_filter.reset();
+}
+
+void
+Voice::noteOff(long tick)
+{
+    m_off = tick;
 }
 
 void
@@ -142,15 +148,15 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 
     if (start < on) return;
 
-    float vgain = (float)(velocity) / 127.0f;
+    float vgain = (float)(m_velocity) / 127.0f;
     float volume = *m_settings->m_volume;
 
     //std::cerr << "vol: " << volume << std::endl;
     vgain *= volume;
 
     float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
-    float freq_detuned = freq * centFactor;
-    float phase_inc1 = freq / m_settings->m_sampleRate;
+    float freq_detuned = m_freq * centFactor;
+    float phase_inc1 = m_freq / m_settings->m_sampleRate;
     float phase_inc2 = freq_detuned / m_settings->m_sampleRate;
 
     for (size_t i = 0; i < count; ++i) {
@@ -158,10 +164,10 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
         float gain(vgain);
 
         //TODO looks like an envelope - only release
-        if (off >= 0 && (unsigned long)(off) < i + start) {
+        if (m_off >= 0 && (unsigned long)(m_off) < i + start) {
 
             unsigned long release = 1 + (releaseSec * m_settings->m_sampleRate);
-            unsigned long dist = i + start - off;
+            unsigned long dist = i + start - m_off;
 
             if (dist > release) {
                 m_on = -1;
