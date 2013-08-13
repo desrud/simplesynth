@@ -85,7 +85,7 @@ LowPassFilter::calculate(float input)
 }
 
 
-Voice::Voice() : m_phase_osc1(0), m_phase_osc2(0), m_on(-1), m_off(-1), m_velocity(0), m_freq(1), m_filter()
+Voice::Voice() : m_phase_osc1(0), m_phase_osc2(0), m_on(-1), m_off(-1), m_velocity(0), m_freq(1), m_filter(), m_pitch(-1)
 {
 }
 
@@ -97,6 +97,7 @@ Voice::reset() {
     m_off = -1;
     m_velocity = 0;
     m_freq = 1;
+    m_pitch = -1;
 }
 
 void
@@ -119,6 +120,7 @@ Voice::noteOn(long tick, int velocity, int pitch)
     m_off = -1;
     m_velocity = velocity;
     m_freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
+    m_pitch = pitch;
 
     //reset filter ... with current impl z needs resetting
     m_filter.reset();
@@ -128,6 +130,13 @@ void
 Voice::noteOff(long tick)
 {
     m_off = tick;
+    m_pitch = -1;
+}
+
+int
+Voice::getPitch()
+{
+    return m_pitch;
 }
 
 void
