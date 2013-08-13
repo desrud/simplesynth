@@ -50,22 +50,24 @@ private:
     Settings *m_settings;
 
     long m_on;
+    long m_off;
     float m_phase_osc1;
     float m_phase_osc2;
+    int m_pitch;
     LowPassFilter m_filter;
+    int m_velocity;
+    float m_freq;
 
     float incrementPhase(float phase, float increment);
 
 public:
-
-    long off;
-    int velocity;
-    float freq;
-    
     Voice();
     void reset();
 
+    bool isInUse();
     void noteOn(long tick, int velocity, int pitch);
+    void noteOff(long tick);
+    int getPitch();
     void setSettings(Settings *settings);
     void addSamples(float *buffer, unsigned long offset, unsigned long count);
 };

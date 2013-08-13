@@ -57,7 +57,7 @@ private:
     };
 
     enum {
-        Notes = 128
+        Polyphony = 32
     };
 
     static const char *const portNames[PortCount];
@@ -86,7 +86,7 @@ private:
 
     Settings *m_settings;
 
-    Voice  m_voices[Notes];
+    Voice  m_voices[Polyphony];
 };
 
 
@@ -215,7 +215,7 @@ SimpleSynth::SimpleSynth(int sampleRate) :
     m_settings->m_waveTables[15] = new WaveTable(rnd11, 100);
     m_settings->m_waveTables[16] = new WaveTable(rnd12, 100);
 
-    for (int i = 0; i < Notes; i++) {
+    for (int i = 0; i < Polyphony; i++) {
         m_voices[i].setSettings(m_settings);
     }
 }
@@ -269,7 +269,7 @@ SimpleSynth::activate(LADSPA_Handle handle)
     *simpleSynth->m_settings->m_q = 0.02f;
     *simpleSynth->m_settings->m_detune = 13.0f;
 
-    for (size_t i = 0; i < Notes; ++i) {
+    for (size_t i = 0; i < Polyphony; ++i) {
         simpleSynth->m_voices[i].reset();
     }
 }
@@ -339,15 +339,31 @@ SimpleSynth::runImpl(unsigned long sampleCount,
                     n = events[eventPos].data.note;
                     if (n.velocity > 0) {
                         cerr << "noteon " << int(n.note) << endl;
-                        m_voices[n.note].noteOn(m_settings->m_blockStart + events[eventPos].time.tick, n.velocity, n.note);
+
+                        int freeVoice = -1;
+                        for (int i = 0; i < Polyphony; ++i) {
+                            if (!m_voices[i].isInUse()) {
+                                freeVoice = i;
+                                break;
+                            }
+                        }
+
+                        if (freeVoice != -1) {
+                            m_voices[freeVoice].noteOn(m_settings->m_blockStart + events[eventPos].time.tick, n.velocity, n.note);
+                        }
                     }
                 break;
 
                 case SND_SEQ_EVENT_NOTEOFF:
-                    
+                    //TODO need to find a suitable voice
                     n = events[eventPos].data.note;
                     cerr << "noteoff " << int(n.note) << endl;
-                    m_voices[n.note].off = m_settings->m_blockStart + events[eventPos].time.tick;//TODO don't access off directly
+
+                    for (int i = 0; i < Polyphony; ++i) {
+                        if (m_voices[i].isInUse() && m_voices[i].getPitch() == n.note) {
+                            m_voices[i].noteOff(m_settings->m_blockStart + events[eventPos].time.tick);
+                        }
+                    }
                 break;
 
                 default:
@@ -367,7 +383,7 @@ SimpleSynth::runImpl(unsigned long sampleCount,
             m_output[pos + i] = 0;
         }
 
-        for (i = 0; i < Notes; ++i) {
+        for (i = 0; i < Polyphony; ++i) {
             m_voices[i].addSamples(m_output, pos, count);
         }
 
