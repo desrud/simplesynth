@@ -65,6 +65,7 @@ public:
     Voice();
     void reset();
 
+    bool isInUse();
     void noteOn(long tick, int velocity, int pitch);
     void setSettings(Settings *settings);
     void addSamples(float *buffer, unsigned long offset, unsigned long count);

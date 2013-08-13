@@ -368,7 +368,9 @@ SimpleSynth::runImpl(unsigned long sampleCount,
         }
 
         for (i = 0; i < Notes; ++i) {
-            m_voices[i].addSamples(m_output, pos, count);
+            if (m_voices[i].isInUse()) {
+                m_voices[i].addSamples(m_output, pos, count);
+            }
         }
 
         pos += count;

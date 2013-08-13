@@ -105,6 +105,12 @@ Voice::setSettings(Settings *settings)
     this->m_settings = settings;
 }
 
+bool
+Voice::isInUse()
+{
+    return m_on != -1;
+}
+
 void
 Voice::noteOn(long tick, int velocity, int pitch)
 {
