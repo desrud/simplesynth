@@ -188,7 +188,7 @@ void
 SynthGUI::releaseChanged(int value)
 {
     float release = float(value) / 1000.0f;
-    m_releaseLabel->setText(QString("%1 ms").arg(release));
+    m_releaseLabel->setText(QString("%1 ms").arg(value));
     if (!m_suppressHostUpdate) {
         cerr << "Sending to host: " << m_controlPath
              << " port " << SIMPLESYNTH_PORT_RELEASE << " release " << release << endl;
