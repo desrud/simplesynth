@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: Cpp; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * main.cc
  * Copyright (C) 2013 desrud <ctrenner@gmx.at>
@@ -33,6 +33,8 @@
 #include "Voice.h"
 
 const int numWaveTables = 17;
+
+using namespace std;
 
 class SimpleSynth
 {
@@ -336,12 +338,15 @@ SimpleSynth::runImpl(unsigned long sampleCount,
                 case SND_SEQ_EVENT_NOTEON:
                     n = events[eventPos].data.note;
                     if (n.velocity > 0) {
+                        cerr << "noteon " << int(n.note) << endl;
                         m_voices[n.note].noteOn(m_settings->m_blockStart + events[eventPos].time.tick, n.velocity, n.note);
                     }
                 break;
 
                 case SND_SEQ_EVENT_NOTEOFF:
+                    
                     n = events[eventPos].data.note;
+                    cerr << "noteoff " << int(n.note) << endl;
                     m_voices[n.note].off = m_settings->m_blockStart + events[eventPos].time.tick;//TODO don't access off directly
                 break;
 
