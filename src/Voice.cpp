@@ -172,8 +172,7 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 
         float tmp = (waveTable->calculate(m_phase_osc1) + waveTable->calculate(m_phase_osc2)) * 0.5f * gain;
 
-        //TODO wire filter
-        buffer[offset + i] = m_filter.calculate(tmp);
+        buffer[offset + i] += m_filter.calculate(tmp);
     }
 }
 
