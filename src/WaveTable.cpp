@@ -19,6 +19,8 @@
 
 #include "WaveTable.h"
 
+const bool useInterpolation = true;
+
 WaveTable::WaveTable(const float* data, const int size)
 {
     m_size = size;
@@ -38,8 +40,19 @@ const float
 WaveTable::calculate(const float phase)
 {
     //phase is in [0, 1]
-    int idx = int(phase * m_size);
-    return (m_data[idx]);//TODO some interpolation
+
+    if (useInterpolation) {
+        int idx = int(phase * m_size);
+        float y0 = m_data[idx];
+        float y1 = m_data[idx + 1];
+        float x = phase * m_size;
+        float x0 = idx;
+
+        return y0 + (y1 - y0) * (x - x0);
+    } else {
+        int idx = int(phase * m_size);
+        return (m_data[idx]);
+    }
 }
 
 
