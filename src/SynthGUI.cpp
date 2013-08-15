@@ -47,12 +47,14 @@ static int handle_x11_error(Display *dpy, XErrorEvent *err)
 
 using std::endl;
 
-#define SIMPLESYNTH_PORT_WAVEFORM  1
-#define SIMPLESYNTH_PORT_DETUNE    2
-#define SIMPLESYNTH_PORT_RELEASE   3
-#define SIMPLESYNTH_PORT_CUTOFF    4
-#define SIMPLESYNTH_PORT_RESONANCE 5
-#define SIMPLESYNTH_PORT_VOLUME    6
+#define SIMPLESYNTH_PORT_WAVEFORM    1
+#define SIMPLESYNTH_PORT_SEMITONES   2
+#define SIMPLESYNTH_PORT_DETUNE      3
+#define SIMPLESYNTH_PORT_OSC_BALANCE 4
+#define SIMPLESYNTH_PORT_RELEASE     5
+#define SIMPLESYNTH_PORT_CUTOFF      6
+#define SIMPLESYNTH_PORT_RESONANCE   7
+#define SIMPLESYNTH_PORT_VOLUME      8
 
 lo_server osc_server = 0;
 
@@ -74,54 +76,80 @@ SynthGUI::SynthGUI(const char * host, const char * port,
 
     QGridLayout *layout = new QGridLayout(this);
 
+    m_waveForm = newQDial(0, 16, 1, 0);//TODO hard coded!
+    m_semitones = newQDial(-24, 24, 1, 0);
     m_detune  = newQDial(0, 100, 1, 0); // (Hz - 400) * 10
-    m_waveForm = newQDial(0, 16, 1, 0);
+    m_oscBalance = newQDial(0, 100, 1, 50);
     m_release = newQDial(0, 1000, 10, 10);
     m_cutoff = newQDial(0, 100, 1, 100);
     m_resonance = newQDial(0, 100, 1, 0);
     m_volume = newQDial(0, 100, 1, 100);
 
-    m_detuneLabel = new QLabel(this);
     m_waveFormLabel = new QLabel(this);
+    m_semitonesLabel = new QLabel(this);
+    m_detuneLabel = new QLabel(this);
+    m_oscBalanceLabel = new QLabel(this);
     m_releaseLabel = new QLabel(this);
     m_cutoffLabel = new QLabel(this);
     m_resonanceLabel = new QLabel(this);
     m_volumeLabel = new QLabel(this);
 
-    layout->addWidget(new QLabel("Detune", this), 0, 0, Qt::AlignCenter);
-    layout->addWidget(m_detune,  1, 0);
-    layout->addWidget(m_detuneLabel,  2, 0, Qt::AlignCenter);
+    int pos = 0;
 
-    layout->addWidget(new QLabel("WaveForm", this), 0, 1, Qt::AlignCenter);
-    layout->addWidget(m_waveForm, 1, 1);
-    layout->addWidget(m_waveFormLabel, 2, 1);
+    layout->addWidget(new QLabel("WaveForm", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_waveForm, 1, pos);
+    layout->addWidget(m_waveFormLabel, 2, pos);
+    ++pos;
 
-    layout->addWidget(new QLabel("Release", this), 0, 2, Qt::AlignCenter);
-    layout->addWidget(m_release, 1, 2);
-    layout->addWidget(m_releaseLabel, 2, 2);
+    layout->addWidget(new QLabel("Semitones", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_semitones, 1, pos);
+    layout->addWidget(m_semitonesLabel, 2, pos);
+    ++pos;
 
-    layout->addWidget(new QLabel("Cutoff", this), 0, 3, Qt::AlignCenter);
-    layout->addWidget(m_cutoff, 1, 3);
-    layout->addWidget(m_cutoffLabel, 2, 3);
+    layout->addWidget(new QLabel("Detune", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_detune,  1, pos);
+    layout->addWidget(m_detuneLabel,  2, pos, Qt::AlignCenter);
+    ++pos;
 
-    layout->addWidget(new QLabel("Resonance", this), 0, 4, Qt::AlignCenter);
-    layout->addWidget(m_resonance, 1, 4);
-    layout->addWidget(m_resonanceLabel, 2, 4);
+    layout->addWidget(new QLabel("OscBalance", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_oscBalance, 1, pos);
+    layout->addWidget(m_oscBalanceLabel, 2, pos);
+    ++pos;
 
-    layout->addWidget(new QLabel("Volume", this), 0, 5, Qt::AlignCenter);
-    layout->addWidget(m_volume, 1, 5);
-    layout->addWidget(m_volumeLabel, 2, 5);
+    layout->addWidget(new QLabel("Release", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_release, 1, pos);
+    layout->addWidget(m_releaseLabel, 2, pos);
+    ++pos;
 
-    connect(m_detune,  SIGNAL(valueChanged(int)), this, SLOT(detuneChanged(int)));
+    layout->addWidget(new QLabel("Cutoff", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_cutoff, 1, pos);
+    layout->addWidget(m_cutoffLabel, 2, pos);
+    ++pos;
+
+    layout->addWidget(new QLabel("Q", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_resonance, 1, pos);
+    layout->addWidget(m_resonanceLabel, 2, pos);
+    ++pos;
+
+    layout->addWidget(new QLabel("Volume", this), 0, pos, Qt::AlignCenter);
+    layout->addWidget(m_volume, 1, pos);
+    layout->addWidget(m_volumeLabel, 2, pos);
+    ++pos;
+
     connect(m_waveForm, SIGNAL(valueChanged(int)), this, SLOT(waveFormChanged(int)));
+    connect(m_semitones, SIGNAL(valueChanged(int)), this, SLOT(semitonesChanged(int)));
+    connect(m_detune,  SIGNAL(valueChanged(int)), this, SLOT(detuneChanged(int)));
+    connect(m_oscBalance, SIGNAL(valueChanged(int)), this, SLOT(oscBalanceChanged(int)));
     connect(m_release, SIGNAL(valueChanged(int)), this, SLOT(releaseChanged(int)));
     connect(m_cutoff, SIGNAL(valueChanged(int)), this, SLOT(cutoffChanged(int)));
     connect(m_resonance, SIGNAL(valueChanged(int)), this, SLOT(resonanceChanged(int)));
     connect(m_volume, SIGNAL(valueChanged(int)), this, SLOT(volumeChanged(int)));
 
     // cause some initial updates
-    detuneChanged (m_detune->value());
     waveFormChanged(m_waveForm->value());
+    semitonesChanged(m_semitones->value());
+    detuneChanged(m_detune->value());
+    oscBalanceChanged(m_oscBalance->value());
     releaseChanged(m_release->value());
     cutoffChanged(m_cutoff->value());
     resonanceChanged(m_resonance->value());
@@ -133,6 +161,46 @@ SynthGUI::SynthGUI(const char * host, const char * port,
     myTimer->start(0);
 
     m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::setWaveForm(float waveForm)
+{
+    m_suppressHostUpdate = true;
+    m_waveForm->setValue(int(waveForm));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::waveFormChanged(int value)
+{
+    float waveForm = float(value);
+    m_waveFormLabel->setText(QString("%1").arg(waveForm));
+    if (!m_suppressHostUpdate) {
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_WAVEFORM << " waveForm " << waveForm << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_WAVEFORM, waveForm);
+    }
+}
+
+void
+SynthGUI::setSemitones(float semitones)
+{
+    m_suppressHostUpdate = true;
+    m_waveForm->setValue(int(semitones));
+    m_suppressHostUpdate = false;
+}
+
+void
+SynthGUI::semitonesChanged(int value)
+{
+    float semitones = float(value);
+    m_semitonesLabel->setText(QString("%1").arg(semitones));
+    if (!m_suppressHostUpdate) {
+        cerr << "Sending to host: " << m_controlPath
+             << " port " << SIMPLESYNTH_PORT_SEMITONES << " semitones " << semitones << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_SEMITONES, semitones);
+    }
 }
 
 void
@@ -157,22 +225,23 @@ SynthGUI::detuneChanged(int value)
 }
 
 void
-SynthGUI::setWaveForm(float waveForm)
+SynthGUI::setOscBalance(float oscBalance)
 {
     m_suppressHostUpdate = true;
-    m_waveForm->setValue(int(waveForm));
+    m_detune->setValue(int(oscBalance) * 100);
     m_suppressHostUpdate = false;
 }
 
 void
-SynthGUI::waveFormChanged(int value)
+SynthGUI::oscBalanceChanged(int value)
 {
-    float waveForm = float(value);
-    m_waveFormLabel->setText(QString("%1").arg(waveForm));
+    float oscBalance = float(value) / 100.0f;
+    m_oscBalanceLabel->setText(QString("%1").arg(oscBalance));
+
     if (!m_suppressHostUpdate) {
         cerr << "Sending to host: " << m_controlPath
-             << " port " << SIMPLESYNTH_PORT_WAVEFORM << " waveForm " << waveForm << endl;
-        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_WAVEFORM, waveForm);
+             << " port " << SIMPLESYNTH_PORT_OSC_BALANCE << " oscBalance " << oscBalance << endl;
+        lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_OSC_BALANCE, oscBalance);
     }
 }
 
@@ -388,9 +457,19 @@ control_handler(const char *path, const char *types, lo_arg **argv,
         gui->setWaveForm(value);
     break;
 
+    case SIMPLESYNTH_PORT_SEMITONES:
+        cerr << "gui setting semitones to " << value << endl;
+        gui->setSemitones(value);
+    break;
+
     case SIMPLESYNTH_PORT_DETUNE:
         cerr << "gui setting detune to " << value << endl;
         gui->setDetune(value);
+    break;
+
+    case SIMPLESYNTH_PORT_OSC_BALANCE:
+        cerr << "gui oscBalance detune to " << value << endl;
+        gui->setOscBalance(value);
     break;
 
     case SIMPLESYNTH_PORT_RELEASE:

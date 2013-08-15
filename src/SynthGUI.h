@@ -45,8 +45,10 @@ public:
     void setHostRequestedQuit(bool r) { m_hostRequestedQuit = r; }
 
 public slots:
-    void setDetune (float cents);
-    void setWaveForm (float waveForm);
+    void setWaveForm(float waveForm);
+    void setSemitones(float semitones);
+    void setDetune(float cents);
+    void setOscBalance(float oscBalance);
     void setRelease (float release);
     void setCutoff (float cutoff);
     void setResonance (float resonance);
@@ -54,8 +56,10 @@ public slots:
     void aboutToQuit();
 
 protected slots:
-    void detuneChanged(int);
     void waveFormChanged(int);
+    void semitonesChanged(int);
+    void detuneChanged(int);
+    void oscBalanceChanged(int);
     void releaseChanged(int);
     void cutoffChanged(int);
     void resonanceChanged(int);
@@ -65,10 +69,14 @@ protected slots:
 protected:
     QDial *newQDial( int, int, int, int );
 
-    QLabel *m_detuneLabel;
-    QDial *m_detune;
     QLabel *m_waveFormLabel;
     QDial *m_waveForm;
+    QLabel *m_semitonesLabel;
+    QDial *m_semitones;
+    QLabel *m_detuneLabel;
+    QDial *m_detune;
+    QLabel *m_oscBalanceLabel;
+    QDial *m_oscBalance;
     QLabel *m_releaseLabel;
     QDial *m_release;
     QLabel *m_cutoffLabel;

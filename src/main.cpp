@@ -48,12 +48,14 @@ private:
     enum {
         OutputPort = 0,
         WaveFormSelect = 1,
-        Detune = 2,
-        Release = 3,
-        Cutoff = 4,
-        Q = 5,
-        Volume = 6,
-        PortCount = 7
+        Semitones = 2,
+        Detune = 3,
+        OscBalance = 4,
+        Release = 5,
+        Cutoff = 6,
+        Q = 7,
+        Volume = 8,
+        PortCount = 9
     };
 
     enum {
@@ -96,7 +98,9 @@ SimpleSynth::portNames[PortCount] =
 {
     "Output",
     "WaveForm",
+    "Semitones",
     "Detune",
+    "OscBalance",
     "Release",
     "Cutoff",
     "Q",
@@ -108,7 +112,9 @@ SimpleSynth::ports[PortCount] =
 {
     LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO,     //Output
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //WaveFormSelect
+    LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Semitones
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Detune
+    LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //OscBalance
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Release
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Cutoff
     LADSPA_PORT_INPUT  | LADSPA_PORT_CONTROL,   //Q
@@ -118,19 +124,23 @@ SimpleSynth::ports[PortCount] =
 const LADSPA_PortRangeHint 
 SimpleSynth::hints[PortCount] =
 {
-    { 0, 0, 0 },                                                     //Output
+    { 0, 0, 0 },                                                                   //Output
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
       LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, numWaveTables - 1 },     //WaveFormSelect
+    { LADSPA_HINT_DEFAULT_MIDDLE | LADSPA_HINT_BOUNDED_BELOW | 
+      LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, -24, 24 },                  //Semitones
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
-      LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },     //Detune
+      LADSPA_HINT_INTEGER | LADSPA_HINT_BOUNDED_ABOVE, 0, 100 },                   //Detune
+    { LADSPA_HINT_DEFAULT_MIDDLE | LADSPA_HINT_BOUNDED_BELOW | 
+        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                                         //OscBalance
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
-        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                           //Release
+        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                                         //Release
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
-        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                           //Cutoff
+        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                                         //Cutoff
     { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
-        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                           //Q
-    { LADSPA_HINT_DEFAULT_MINIMUM | LADSPA_HINT_BOUNDED_BELOW | 
-        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                           //Volume
+        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                                         //Q
+    { LADSPA_HINT_DEFAULT_MAXIMUM | LADSPA_HINT_BOUNDED_BELOW | 
+        LADSPA_HINT_BOUNDED_ABOVE, 0, 1 },                                         //Volume
 };
 
 const LADSPA_Properties
@@ -187,7 +197,10 @@ SimpleSynth::SimpleSynth(int sampleRate) :
 {
     m_settings = new Settings();
     m_settings->m_sampleRate = sampleRate;
+    m_settings->m_waveForm = 0;
+    m_settings->m_semitones = 0;
     m_settings->m_detune = 0;
+    m_settings->m_oscBalance = 0;
     m_settings->m_release = 0;
     m_settings->m_cutoff = 0;
     m_settings->m_q = 0;
@@ -244,13 +257,15 @@ SimpleSynth::connectPort(LADSPA_Handle handle,
     SimpleSynth *simpleSynth = (SimpleSynth *)handle;
 
     float **ports[PortCount] = {
-        &simpleSynth->m_output,                //Output
-        &simpleSynth->m_settings->m_waveForm,  //WaveFormSelect
-        &simpleSynth->m_settings->m_detune,    //Detune
-        &simpleSynth->m_settings->m_release,   //Release
-        &simpleSynth->m_settings->m_cutoff,    //Cutoff
-        &simpleSynth->m_settings->m_q,         //Q
-        &simpleSynth->m_settings->m_volume,    //Volume
+        &simpleSynth->m_output,                  //Output
+        &simpleSynth->m_settings->m_waveForm,    //WaveFormSelect
+        &simpleSynth->m_settings->m_semitones,   //Semitones
+        &simpleSynth->m_settings->m_detune,      //Detune
+        &simpleSynth->m_settings->m_oscBalance,  //OscBalance
+        &simpleSynth->m_settings->m_release,     //Release
+        &simpleSynth->m_settings->m_cutoff,      //Cutoff
+        &simpleSynth->m_settings->m_q,           //Q
+        &simpleSynth->m_settings->m_volume,      //Volume
     };
 
     *ports[port] = (float *)location;
@@ -263,11 +278,14 @@ SimpleSynth::activate(LADSPA_Handle handle)
 
     simpleSynth->m_settings->m_blockStart = 0;
     *simpleSynth->m_settings->m_waveForm = 4.0f;
+    *simpleSynth->m_settings->m_semitones = 0.0f;
+    *simpleSynth->m_settings->m_detune = 13.0f;
+    *simpleSynth->m_settings->m_oscBalance = 0.0f;
     *simpleSynth->m_settings->m_release = 0.05f;
     *simpleSynth->m_settings->m_volume = 0.7f;
     *simpleSynth->m_settings->m_cutoff = 0.9f;
     *simpleSynth->m_settings->m_q = 0.02f;
-    *simpleSynth->m_settings->m_detune = 13.0f;
+
 
     for (size_t i = 0; i < Polyphony; ++i) {
         simpleSynth->m_voices[i].reset();
@@ -298,7 +316,9 @@ SimpleSynth::getMidiController(LADSPA_Handle, unsigned long port)
     int controllers[PortCount] = {
         DSSI_NONE,
         DSSI_NONE,   //WaveForm
+        DSSI_NONE,   //Semitones
         DSSI_NONE,   //Detune
+        DSSI_NONE,   //OscBalance
         DSSI_NONE,   //Release
         DSSI_NONE,   //Cutoff
         DSSI_NONE,   //Q

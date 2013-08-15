@@ -164,9 +164,10 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
     vgain *= volume;
 
     float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
-    float freq_detuned = m_freq * centFactor;
-    float phase_inc1 = m_freq / m_settings->m_sampleRate;
-    float phase_inc2 = freq_detuned / m_settings->m_sampleRate;
+    float freq1 = m_freq;//TODO wouldn't it be better when freq is calculated ad hoc from pitch?
+    float freq2 = 440.0f * powf(2.0f, (m_pitch - 69.0f + *m_settings->m_semitones) / 12.0f) * centFactor;
+    float phase_inc1 = freq1 / m_settings->m_sampleRate;
+    float phase_inc2 = freq2 / m_settings->m_sampleRate;
 
     for (size_t i = 0; i < count; ++i) {
 
@@ -191,7 +192,11 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
 
         WaveTable *waveTable = m_settings->m_waveTables[int(*m_settings->m_waveForm)];
 
-        float tmp = (waveTable->calculate(m_phase_osc1) + waveTable->calculate(m_phase_osc2)) * 0.5f * gain;
+        float gainOsc1 = std::min(1.0f -*m_settings->m_oscBalance, 0.5f);
+        float gainOsc2 = std::min(*m_settings->m_oscBalance, 0.5f);
+
+        float tmp = (waveTable->calculate(m_phase_osc1) * gainOsc1 
+                    + waveTable->calculate(m_phase_osc2) * gainOsc2) * gain;
 
         buffer[offset + i] += m_filter.calculate(tmp);
     }

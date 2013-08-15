@@ -25,8 +25,10 @@
 struct Settings
 {
     int    m_sampleRate;
-    float *m_detune;
     float *m_waveForm;
+    float *m_semitones;
+    float *m_detune;
+    float *m_oscBalance;
     float *m_release;
     float *m_cutoff;
     float *m_q;
