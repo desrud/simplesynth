@@ -56,7 +56,6 @@ private:
     int m_pitch;
     LowPassFilter m_filter;
     int m_velocity;
-    float m_freq;
 
     float incrementPhase(float phase, float increment);
 

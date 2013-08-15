@@ -85,7 +85,7 @@ LowPassFilter::calculate(float input)
 }
 
 
-Voice::Voice() : m_phase_osc1(0), m_phase_osc2(0), m_on(-1), m_off(-1), m_velocity(0), m_freq(1), m_filter(), m_pitch(-1)
+Voice::Voice() : m_phase_osc1(0), m_phase_osc2(0), m_on(-1), m_off(-1), m_velocity(0), m_filter(), m_pitch(-1)
 {
 }
 
@@ -96,7 +96,6 @@ Voice::reset() {
     m_on = -1;
     m_off = -1;
     m_velocity = 0;
-    m_freq = 1;
     m_pitch = -1;
 }
 
@@ -119,7 +118,6 @@ Voice::noteOn(long tick, int velocity, int pitch)
 
     m_off = -1;
     m_velocity = velocity;
-    m_freq = 440.0f * powf(2.0, (pitch - 69.0) / 12.0);
     m_pitch = pitch;
 
     //reset filter ... with current impl z needs resetting
@@ -164,7 +162,7 @@ Voice::addSamples(float *buffer, unsigned long offset, unsigned long count)
     vgain *= volume;
 
     float centFactor = powf(2.0, *(m_settings->m_detune) / 1200.0);
-    float freq1 = m_freq;//TODO wouldn't it be better when freq is calculated ad hoc from pitch?
+    float freq1 = 440.0f * powf(2.0f, (m_pitch - 69.0f) / 12.0f);
     float freq2 = 440.0f * powf(2.0f, (m_pitch - 69.0f + *m_settings->m_semitones) / 12.0f) * centFactor;
     float phase_inc1 = freq1 / m_settings->m_sampleRate;
     float phase_inc2 = freq2 / m_settings->m_sampleRate;
