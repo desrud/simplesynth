@@ -278,9 +278,9 @@ SimpleSynth::activate(LADSPA_Handle handle)
 
     simpleSynth->m_settings->m_blockStart = 0;
     *simpleSynth->m_settings->m_waveForm = 4.0f;
-    *simpleSynth->m_settings->m_semitones = 0.0f;
+    *simpleSynth->m_settings->m_semitones = 12.0f;
     *simpleSynth->m_settings->m_detune = 13.0f;
-    *simpleSynth->m_settings->m_oscBalance = 0.0f;
+    *simpleSynth->m_settings->m_oscBalance = 0.45f;
     *simpleSynth->m_settings->m_release = 0.05f;
     *simpleSynth->m_settings->m_volume = 0.7f;
     *simpleSynth->m_settings->m_cutoff = 0.9f;

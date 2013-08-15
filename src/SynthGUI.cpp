@@ -187,7 +187,7 @@ void
 SynthGUI::setSemitones(float semitones)
 {
     m_suppressHostUpdate = true;
-    m_waveForm->setValue(int(semitones));
+    m_semitones->setValue(int(semitones));
     m_suppressHostUpdate = false;
 }
 
@@ -228,7 +228,7 @@ void
 SynthGUI::setOscBalance(float oscBalance)
 {
     m_suppressHostUpdate = true;
-    m_detune->setValue(int(oscBalance) * 100);
+    m_oscBalance->setValue(int(oscBalance * 100));
     m_suppressHostUpdate = false;
 }
 
@@ -300,7 +300,7 @@ SynthGUI::resonanceChanged(int value)
     m_resonanceLabel->setText(QString("%1").arg(resonance));
     if (!m_suppressHostUpdate) {
         cerr << "Sending to host: " << m_controlPath
-             << " port " << SIMPLESYNTH_PORT_RESONANCE << " resonance " << resonance << endl;
+             << " port " << SIMPLESYNTH_PORT_RESONANCE << " q " << resonance << endl;
         lo_send(m_host, m_controlPath, "if", SIMPLESYNTH_PORT_RESONANCE, resonance);
     }
 }
@@ -468,7 +468,7 @@ control_handler(const char *path, const char *types, lo_arg **argv,
     break;
 
     case SIMPLESYNTH_PORT_OSC_BALANCE:
-        cerr << "gui oscBalance detune to " << value << endl;
+        cerr << "gui setting oscBalance to " << value << endl;
         gui->setOscBalance(value);
     break;
 
@@ -483,7 +483,7 @@ control_handler(const char *path, const char *types, lo_arg **argv,
     break;
 
     case SIMPLESYNTH_PORT_RESONANCE:
-        cerr << "gui setting resonance to " << value << endl;
+        cerr << "gui setting q to " << value << endl;
         gui->setResonance(value);
     break;
 
