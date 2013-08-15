@@ -1,7 +1,7 @@
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: Cpp; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * simple-synth
- * Copyright (C) drd 2013 <drd@muh>
+ * simplesynth
+ * Copyright (C) 2013 Christian Trenner <ctrenner@gmx.at>
  * 
  * simple-synth is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
