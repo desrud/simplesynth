@@ -12,3 +12,10 @@
 *.la
 *.a
 
+# Generated
+Makefile
+src/Makefile
+config.h
+config.status
+config.log
+
